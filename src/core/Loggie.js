@@ -4,7 +4,7 @@ import GameObject from "./gameObject/GameObject";
 import PhysicsModule from "./modules/PhysicsModule";
 import Pool from './utils/Pool';
 
-export default class Eugine {
+export default class Loggie {
     static PhysicsTimeScale = 1;
     static TimeScale = 1;
     constructor() {
