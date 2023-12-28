@@ -1,7 +1,7 @@
 import * as signals from 'signals';
 
-import Eugine from '../Loggie';
 import GameObject from "../gameObject/GameObject";
+import Loggie from '../Loggie';
 import Matter from "matter-js";
 
 export default class PhysicsModule extends GameObject {
@@ -13,9 +13,23 @@ export default class PhysicsModule extends GameObject {
                 scale: 10,
                 x: 0,
                 y: 0
-            }
+            },
+           // debug:true
         });
 
+        // const render = Matter.Render.create({
+        //     element: document.body,
+        //     engine: this.physicsEngine,
+        //     options: {
+        //         width: 800,
+        //         height: 600,
+        //         showAngleIndicator: true, // Show angle indicators
+        //         showCollisions: true,     // Show collision points
+        //         showVelocity: true,       // Show velocity vectors
+        //         wireframes: false,        // Set to true for wireframe rendering
+        //     },
+        // });
+        // Matter.Render.run(render);
         this.entityAdded = new signals.Signal()
         this.entityRemoved = new signals.Signal()
 
@@ -26,7 +40,7 @@ export default class PhysicsModule extends GameObject {
         this.physicsStats = {
             totalPhysicsEntities: 0
         }
-        window.gameplayFolder.add(this.physicsStats, 'totalPhysicsEntities').listen();
+        //window.gameplayFolder.add(this.physicsStats, 'totalPhysicsEntities').listen();
 
         Matter.Events.on(this.physicsEngine, 'collisionActive ', (event) => {
             event.pairs.forEach((collision) => {
@@ -95,8 +109,8 @@ export default class PhysicsModule extends GameObject {
     }
 
     removeAgent(agent) {
-        Eugine.RemoveFromListById(this.nonStaticList, agent)
-        Eugine.RemoveFromListById(this.collisionList, agent)        
+        Loggie.RemoveFromListById(this.nonStaticList, agent)
+        Loggie.RemoveFromListById(this.collisionList, agent)        
         Matter.World.remove(this.physicsEngine.world, agent.rigidBody)        
     }
 
@@ -115,8 +129,9 @@ export default class PhysicsModule extends GameObject {
         }
     }
     update(delta) {
-        delta *= Eugine.PhysicsTimeScale;
+        delta *= Loggie.PhysicsTimeScale;
         super.update(delta)
+
         if (this.physicsEngine && delta) {
             Matter.Engine.update(this.physicsEngine, delta);
         }

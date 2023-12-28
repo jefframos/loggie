@@ -1,15 +1,13 @@
 import * as PIXI from 'pixi.js';
 
 import Camera from './Camera';
-import Game from '../../Game';
-import LightSource from './view/LightSource';
-import Player from '../entity/Player';
 import RenderModule from './modules/RenderModule';
-import utils from '../../utils';
+import Utils from './utils/Utils';
 
 export default class PerspectiveCamera extends Camera {
     constructor() {
         super()
+        
         this.cam = {
             x: 0, y: 250, z: 0, aspec: 1, fov: 5, near: 0, far: 20000
         }
@@ -19,7 +17,7 @@ export default class PerspectiveCamera extends Camera {
             }
         }
        
-        window.GUI.add(this, 'targetZoom', 0.5, 3).listen();
+        //window.GUI.add(this, 'targetZoom', 0.5, 3).listen();
     }
     start() {
         this.renderModule = this.engine.findByType(RenderModule);
@@ -30,17 +28,17 @@ export default class PerspectiveCamera extends Camera {
         super.update(delta);
 
         if (this.followPoint) {
-            if (utils.distance(this.renderModule.container.pivot.x, this.renderModule.container.pivot.y, this.followPoint.x, this.followPoint.z) > 30) {
+            if (Utils.distance(this.renderModule.container.pivot.x, this.renderModule.container.pivot.y, this.followPoint.x, this.followPoint.z) > 30) {
 
                 let angle = Math.atan2(this.renderModule.container.pivot.y - this.followPoint.z,
                     this.renderModule.container.pivot.x - this.followPoint.x)
             } else {
 
             }
-            this.renderModule.container.pivot.x = utils.lerp(this.renderModule.container.pivot.x, this.followPoint.x, 0.1)
-            this.renderModule.container.pivot.y = utils.lerp(this.renderModule.container.pivot.y, this.followPoint.z, 0.1)
+            this.renderModule.container.pivot.x = 0//Utils.lerp(this.renderModule.container.pivot.x, this.followPoint.x, 0.1)
+            this.renderModule.container.pivot.y = 0//Utils.lerp(this.renderModule.container.pivot.y, this.followPoint.z, 0.1)
 
-            Camera.Zoom = utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta*60)
+            Camera.Zoom = Utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta*60)
 
             this.renderModule.container.scale.set(Camera.Zoom);
 

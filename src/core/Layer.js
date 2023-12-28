@@ -37,6 +37,9 @@ export default class Layer {
         this.container.sortableChildren = true;
     }
     addGameView(gameView) {
+    
+        
+        console.log('add gere', gameView.view)
         this.gameViews.push(gameView)
         this.container.addChild(gameView.view)
     }

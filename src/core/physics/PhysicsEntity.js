@@ -6,6 +6,7 @@ import Utils from "../utils/Utils";
 import Vector3 from "../gameObject/Vector3";
 
 export default class PhysicsEntity extends GameObject {
+    //public physics: PhysicsProperties = new PhysicsProperties();
     constructor() {
         super();
         this.rigidBody = null;

@@ -2,9 +2,9 @@ import * as signals from 'signals';
 
 import Matter, { Engine } from "matter-js";
 
-import Eugine from '../Loggie';
 import Game from '../../../Game';
 import GameObject from "../gameObject/GameObject";
+import Loggie from '../Loggie';
 
 export default class InputModule extends GameObject {
     constructor(container) {
@@ -49,7 +49,7 @@ export default class InputModule extends GameObject {
         this.container.on("pointerdown", (e) => {
 
             this.sortPosition(e)
-            if(Eugine.TimeScale <= 0){
+            if(Loggie.TimeScale <= 0){
                 this.mouseDown = false;
                 return
             }

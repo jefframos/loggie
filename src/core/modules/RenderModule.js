@@ -1,3 +1,5 @@
+import * as PIXI from "pixi.js";
+
 import GameObject from "../gameObject/GameObject";
 import Layer from "../Layer";
 import PhysicsModule from "./PhysicsModule";
@@ -27,6 +29,11 @@ export default class RenderModule extends GameObject {
         this.uiContainer = uiContainer;
         this.uiOverlay = uiOverlay;
 
+
+        const test = new PIXI.Graphics().beginFill(0xFF9900).drawCircle(0, 0, 30)
+        this.container.addChild(test)
+        console.log(this.container)
+
         this.views = [];
 
         this.layers = {};
@@ -53,7 +60,7 @@ export default class RenderModule extends GameObject {
         this.renderStats = {
             totalRenderEntities: 0
         }
-        window.gameplayFolder.add(this.renderStats, 'totalRenderEntities').listen();
+        //window.gameplayFolder.add(this.renderStats, 'totalRenderEntities').listen();
 
         this.onNewRenderEntityAdded = new signals.Signal();
         this.onNewRenderEntityLateAdded = new signals.Signal();
@@ -78,6 +85,10 @@ export default class RenderModule extends GameObject {
                     this.uiOverlay.addChild(element.gameView.view)
 
                 } else {
+
+
+
+    
                     this.layers[element.gameView.layer].addGameView(element.gameView)
                     this.onNewRenderEntityAdded.dispatch(element);
                 }

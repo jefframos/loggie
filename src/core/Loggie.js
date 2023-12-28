@@ -17,7 +17,7 @@ export default class Loggie {
         this.engineStats = {
             totalGameObjects: 0
         }
-        window.GUI.add(this.engineStats, 'totalGameObjects').listen();
+       // window.GUI.add(this.engineStats, 'totalGameObjects').listen();
 
         this.started = false;
 
@@ -131,8 +131,8 @@ export default class Loggie {
     //remove the game object from the world
     wipeGameObject(gameObject) {
 
-        Eugine.RemoveFromListById(this.gameObjects, gameObject)
-        Eugine.RemoveFromListById(this.resizeableList, gameObject)
+        Loggie.RemoveFromListById(this.gameObjects, gameObject)
+        Loggie.RemoveFromListById(this.resizeableList, gameObject)
 
         if (gameObject.rigidBody) {
             this.physics.removeAgent(gameObject)
@@ -162,13 +162,13 @@ export default class Loggie {
         })
     }
 
-    update(delta) {
+    update(delta, unscaledDelta) {
         if (!this.started) {
             return
         }
         this.gameObjects.forEach(element => {
             if (element.update && element.enabled && !element.destroyed) {
-                element.update(delta * Eugine.TimeScale, delta);
+                element.update(delta * Loggie.TimeScale, delta);
             }
         });
 
@@ -180,7 +180,7 @@ export default class Loggie {
 
         this.gameObjects.forEach(element => {
             if (element.lateUpdate && element.enabled) {
-                element.lateUpdate(delta * Eugine.TimeScale, delta);
+                element.lateUpdate(delta * Loggie.TimeScale, delta);
             }
         });
 
