@@ -17,19 +17,19 @@ export default class PhysicsModule extends GameObject {
            // debug:true
         });
 
-        // const render = Matter.Render.create({
-        //     element: document.body,
-        //     engine: this.physicsEngine,
-        //     options: {
-        //         width: 800,
-        //         height: 600,
-        //         showAngleIndicator: true, // Show angle indicators
-        //         showCollisions: true,     // Show collision points
-        //         showVelocity: true,       // Show velocity vectors
-        //         wireframes: false,        // Set to true for wireframe rendering
-        //     },
-        // });
-        // Matter.Render.run(render);
+        const render = Matter.Render.create({
+            element: document.body,
+            engine: this.physicsEngine,
+            options: {
+                width: 800,
+                height: 600,
+                showAngleIndicator: true, // Show angle indicators
+                showCollisions: true,     // Show collision points
+                showVelocity: true,       // Show velocity vectors
+                wireframes: false,        // Set to true for wireframe rendering
+            },
+        });
+        Matter.Render.run(render);
         this.entityAdded = new signals.Signal()
         this.entityRemoved = new signals.Signal()
 
@@ -93,6 +93,7 @@ export default class PhysicsModule extends GameObject {
 
     }
     addPhysicBody(physicBody) {
+        console.log('addPhysicBody', physicBody)
         if (physicBody.collisionEnter || physicBody.collisionExit || physicBody.collisionStay) {
             this.collisionList.push(physicBody);
         }

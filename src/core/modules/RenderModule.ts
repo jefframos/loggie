@@ -4,6 +4,8 @@ import GameObject from "../gameObject/GameObject";
 import Layer from "../Layer";
 import PhysicsModule from "./PhysicsModule";
 import signals from "signals";
+import Loggie from "../Loggie";
+import GameView from "../view/GameView";
 
 export default class RenderModule extends GameObject {
     static RenderLayers = {
@@ -22,21 +24,28 @@ export default class RenderModule extends GameObject {
     }
     static UILayer = 'UI';
     static UILayerOverlay = 'UIOverlay';
-    constructor(container, uiContainer, uiOverlay) {
-        super();
+
+    protected container: PIXI.Container;
+    protected uiContainer: PIXI.Container;
+    protected uiOverlay: PIXI.Container;
+    protected views: Array<GameView>;
+
+    public onNewRenderEntityAdded: signals.Signal;
+    public onNewRenderEntityLateAdded: signals.Signal;
+
+    private layers:Map<string, Layer>;
+    private layersArray:Array<Layer> = []
+    private lateAdded:Array<GameView> = []
+
+    constructor(loggie: Loggie, container: PIXI.Container, uiContainer: PIXI.Container, uiOverlay: PIXI.Container) {
+        super(loggie);
 
         this.container = container;
         this.uiContainer = uiContainer;
         this.uiOverlay = uiOverlay;
-
-
-        const test = new PIXI.Graphics().beginFill(0xFF9900).drawCircle(0, 0, 30)
-        this.container.addChild(test)
-        console.log(this.container)
-
         this.views = [];
 
-        this.layers = {};
+        this.layers = new Map<string, Layer>();
         this.layersArray = [];
         for (const key in RenderModule.RenderLayers) {
             const element = RenderModule.RenderLayers[key];
@@ -53,53 +62,57 @@ export default class RenderModule extends GameObject {
             let layer = new Layer(element, container, sortable)
             layer.cameraUpdate = cameraUpdate;
             this.container.addChild(layer.container)
-            this.layers[element] = layer;
+            this.layers.set(element, layer);
             this.layersArray.push(layer)
         }
 
-        this.renderStats = {
-            totalRenderEntities: 0
-        }
+        // this.renderStats = {
+        //     totalRenderEntities: 0
+        // }
         //window.gameplayFolder.add(this.renderStats, 'totalRenderEntities').listen();
 
         this.onNewRenderEntityAdded = new signals.Signal();
         this.onNewRenderEntityLateAdded = new signals.Signal();
-    
+
         this.lateAdded = []
-        this.layers[RenderModule.RenderLayers.Shadow].container.tint = 0
-        this.layers[RenderModule.RenderLayers.Shadow].container.alpha = 0.1
-    }    
+
+
+        //this.layers.get(RenderModule.RenderLayers.Shadow)?.container.tint = 0
+        //this.layers.get(RenderModule.RenderLayers.Shadow)?.container.alpha = 0.1
+    }
     start() {
         this.physics = this.engine.findByType(PhysicsModule)
         this.engine.entityAdded.add(this.newEntityAdded.bind(this))
     }
-    newEntityAdded(entities) {
+    newEntityAdded(entities:Array<GameObject>) {
+        console.log(entities)
         entities.forEach(element => {
-            if (element.gameView) {
+            const gameView = element.findComponent(GameView) as GameView
+            if (gameView) {
 
                 element.gameObjectDestroyed.add(this.elementDestroyed.bind(this))
-                if (element.gameView.layer == RenderModule.UILayer) {
-                    this.uiContainer.addChild(element.gameView.view)
+                if (gameView.layer == RenderModule.UILayer) {
+                    this.uiContainer.addChild(gameView.view)
 
-                } else if (element.gameView.layer == RenderModule.UILayerOverlay) {
-                    this.uiOverlay.addChild(element.gameView.view)
+                } else if (gameView.layer == RenderModule.UILayerOverlay) {
+                    this.uiOverlay.addChild(gameView.view)
 
                 } else {
 
 
 
-    
-                    this.layers[element.gameView.layer].addGameView(element.gameView)
-                    this.onNewRenderEntityAdded.dispatch(element);
+
+                    this.layers.get(gameView.layer)?.addGameView(gameView)
+                    this.onNewRenderEntityAdded.dispatch(element.gameObject);
                 }
 
-                this.lateAdded.push(element);
+                this.lateAdded.push(element.gameObject);
 
 
             }
-            if (element.debug) {
-                this.layers[RenderModule.RenderLayers.Debug].addChild(element.debug)
-            }
+            // if (element.debug) {
+            //     this.layers[RenderModule.RenderLayers.Debug].addChild(element.debug)
+            // }
 
         });
 
@@ -124,10 +137,10 @@ export default class RenderModule extends GameObject {
     }
     swapLayer(entity, layer) {
 
-        if( entity.layer == layer){
+        if (entity.layer == layer) {
             return;
         }
-        
+
         this.layers[entity.layer].removeGameView(entity)
         this.layers[layer].addGameView(entity)
 
@@ -140,7 +153,7 @@ export default class RenderModule extends GameObject {
             element.onRender();
         });
 
-        this.renderStats.totalRenderEntities = this.layers[RenderModule.RenderLayers.Gameplay].children.length;
+        //this.renderStats.totalRenderEntities = this.layers[RenderModule.RenderLayers.Gameplay].children.length;
 
         if (this.lateAdded.length) {
             this.onNewRenderEntityLateAdded.dispatch(this.lateAdded)

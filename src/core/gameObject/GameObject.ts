@@ -2,40 +2,42 @@ import * as signals from 'signals';
 
 import BaseComponent from "./BaseComponent";
 import Pool from '../utils/Pool';
-import TagManager from '../TagManager';
 import Transform from "./Transform";
 import Vector3 from './Vector3';
+import Loggie from '../Loggie';
+import { TagType } from '../TagType';
 
 export default class GameObject extends BaseComponent {
     static ObjectCounter = 0;
+    protected isDestroyed = false;
+
+    private engineID: number;
+    public transform: Transform;
+    public children: Array<GameObject> = []
+    public components: Array<BaseComponent> = [];
+
+    public parent?: GameObject;
+
+    public gameObjectDestroyed = new signals.Signal();
+    public childAdded = new signals.Signal();
+    public childRemoved = new signals.Signal();
+    public rigidbodyAdded = new signals.Signal();
     constructor() {
         super();
 
-        this.tag = TagManager.Tags.Untagged;
+        this.transform = new Transform(this);
         this.gameObject = this;
         this.engineID = ++GameObject.ObjectCounter;
-        this.transform = new Transform();
-        this.children = []
-        this.components = [];
-        this.enabled = true;
-        this.parent = null
-        
-        this.gameObjectDestroyed = new signals.Signal();
-        this.childAdded = new signals.Signal();
-        this.childRemoved = new signals.Signal();
-        this.rigidbodyAdded = new signals.Signal();
-        this.isDestroyed = false;
-        this.viewOffset = new Vector3()
 
     }
     start() {
         this.isDestroyed = false;
     }
-    findComponentGameObject(type) {
+    findComponentGameObject(type: any) {
         let elementFound = null
 
-        for (let index = 0; index < this.gameObjects.length; index++) {
-            const element = this.gameObjects[index];
+        for (let index = 0; index < this.children.length; index++) {
+            const element = this.children[index];
             if (element instanceof type) {
                 elementFound = element;
                 break
@@ -43,7 +45,7 @@ export default class GameObject extends BaseComponent {
         }
         return elementFound;
     }
-    findComponent(type) {
+    findComponent(type: any) {
         let elementFound = null
 
         for (let index = 0; index < this.components.length; index++) {
@@ -55,18 +57,18 @@ export default class GameObject extends BaseComponent {
         }
         return elementFound;
     }
-    addComponent(constructor) {
+    addComponent(constructor: any) {
         let element = Pool.instance.getElement(constructor)
         this.components.push(element);
         element.gameObject = this;
         element.enable();
         return element;
     }
-    removeComponent(component) {
+    removeComponent(component: any) {
         this.components = this.components.filter(item => item !== component)
         Pool.instance.returnElement(component)
     }
-    addChild(gameObject) {
+    addChild(gameObject: GameObject) {
         gameObject.setParent(this)
         this.childAdded.dispatch(gameObject)
         this.children.push(gameObject);
@@ -87,44 +89,53 @@ export default class GameObject extends BaseComponent {
         let rad = this.transform.angle * 180 * Math.PI
         return rad
     }
+    get x():number{
+        return this.transform.position.x
+    }
+    get y():number{
+        return this.transform.position.y
+    }
+    get z():number{
+        return this.transform.position.z
+    }
     /**
      * @param {number} value
      */
-    set x(value) {
+    set x(value: number) {
         this.transform.position.x = value
     }
     /**
      * @param {number} value
      */
-    set y(value) {
+    set y(value: number) {
         this.transform.position.y = value
     }
-    set z(value) {
+    set z(value: number) {
         this.transform.position.z = value
     }
-    setPosition(x, y, z = 0) {
+    setPosition(x: number, y: number, z = 0) {
         this.x = x
         this.y = y
         this.z = z
     }
-    setPositionXZ(x, z = 0) {
+    setPositionXZ(x: number, z = 0) {
         this.x = x
         this.z = z
     }
-    onRender(){
+    onRender() {
         for (let i = this.components.length - 1; i >= 0; i--) {
-            const element = this.components[i];         
+            const element = this.components[i];
             if (element.enabled) {
                 element.onRender();
             }
         }
     }
-    update(delta) {
+    update(delta: number) {
         super.update(delta);
         for (let i = this.components.length - 1; i >= 0; i--) {
             const element = this.components[i];
-            if(element.shouldBeRemoved){
-                this.components.splice(i,1);
+            if (element.shouldBeRemoved) {
+                this.components.splice(i, 1);
                 continue;
             }
             if (element.enabled) {
@@ -134,8 +145,8 @@ export default class GameObject extends BaseComponent {
 
         for (let i = this.components.length - 1; i >= 0; i--) {
             const element = this.components[i];
-            if(element.shouldBeRemoved){
-                this.components.splice(i,1);
+            if (element.shouldBeRemoved) {
+                this.components.splice(i, 1);
                 continue;
             }
             if (element.enabled) {
@@ -168,6 +179,7 @@ export default class GameObject extends BaseComponent {
 
         if (this.parent) {
             this.parent.removeChild(this)
+            this.transform.parent = undefined;
         }
 
         if (this.children.length) {
@@ -187,7 +199,7 @@ export default class GameObject extends BaseComponent {
         Pool.instance.returnElement(this)
     }
 
-    removeChild(child) {
+    removeChild(child: GameObject) {
 
         for (let index = 0; index < this.children.length; index++) {
             const element = this.children[index];
@@ -198,15 +210,16 @@ export default class GameObject extends BaseComponent {
 
         }
     }
-    setParent(newParent) {
+    setParent(newParent: GameObject) {
         if (this.parent && this.parent != newParent) {
             this.parent.removeChild(this)
         }
         this.parent = newParent;
+        this.transform.parent = newParent.transform;
         this.getNewParent(newParent);
 
     }
-    getNewParent(newParent) {
+    getNewParent(newParent: GameObject) {
 
     }
     get destroyed() {

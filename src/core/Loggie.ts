@@ -3,30 +3,45 @@ import * as signals from 'signals';
 import GameObject from "./gameObject/GameObject";
 import PhysicsModule from "./modules/PhysicsModule";
 import Pool from './utils/Pool';
+import Camera from './Camera';
 
 export default class Loggie {
-    static PhysicsTimeScale = 1;
-    static TimeScale = 1;
+
+    static _instance: Loggie;
+    static get instance() {    
+        return Loggie._instance;
+    }
+
+    public static PhysicsTimeScale: number = 1;
+    public static TimeScale: number = 1;
+    public static Time: number = 0;
+
+    public entityAdded: signals.Signal = new signals.Signal();
+    private gameObjects: Array<GameObject>;
+    private resizeableList: Array<GameObject>;
+    public parentGameObject: GameObject;
+    public physics: PhysicsModule;
+    public camera: Camera;
+
+    private started: boolean = false;
+
+    private callbacksWhenAdding: Map<string, Array<(gameObject: GameObject) => void>>;
+
     constructor() {
+        Loggie._instance = this;
+        
         this.entityAdded = new signals.Signal()
         this.gameObjects = []
         this.resizeableList = []
         this.parentGameObject = new GameObject();
-        this.physics = this.addGameObject(new PhysicsModule())
-
-        this.engineStats = {
-            totalGameObjects: 0
-        }
-       // window.GUI.add(this.engineStats, 'totalGameObjects').listen();
-
+        this.physics = this.addGameObject(new PhysicsModule()) as PhysicsModule
         this.started = false;
-
-        this.callbacksWhenAdding = {};
+        this.callbacksWhenAdding = new Map<string, Array<(gameObject: GameObject) => void>>();
 
     }
 
     //helper to revome entity from list by its unique engine id
-    static RemoveFromListById(list, gameObject) {
+    static RemoveFromListById(list: Array<any>, gameObject: GameObject) {
         for (let index = 0; index < list.length; index++) {
             const element = list[index];
             if (element.engineID == gameObject.engineID) {
@@ -36,22 +51,22 @@ export default class Loggie {
 
         }
     }
-    callbackWhenAdding(constructor, callback) {
-        if(!this.callbacksWhenAdding[constructor.name]){
-            this.callbacksWhenAdding[constructor.name] = [callback];
-        }else{
-            this.callbacksWhenAdding[constructor.name].push(callback);
+    callbackWhenAdding(constructor: any, callback: (gameObject: GameObject) => void) {
+        if (!this.callbacksWhenAdding.has(constructor.name)) {
+            this.callbacksWhenAdding.set(constructor.name, [callback]);
+        } else {
+            this.callbacksWhenAdding.get(constructor.name)?.push(callback);
         }
     }
     //add main camera
-    addCamera(camera) {
-        this.camera = this.addGameObject(camera);
+    addCamera(camera: Camera) {
+        this.camera = this.addGameObject(camera) as Camera;
 
         return this.camera;
     }
 
     //add game object using pooling system
-    poolGameObject(constructor, rebuild) {
+    poolGameObject(constructor: any, rebuild: boolean) {
         let element = Pool.instance.getElement(constructor)
         if (element.removeAllSignals) {
             element.removeAllSignals();
@@ -66,23 +81,8 @@ export default class Loggie {
         return go;
     }
 
-    //add game object at random position (more like a helper)    
-    poolAtRandomPosition(constructor, rebuild, bounds) {
-        let element = Pool.instance.getElement(constructor)
-        element.engine = this;
-
-        element.enable()
-        let go = this.addGameObject(element);
-        if (rebuild) {
-            go.build();
-        }
-        go.x = Math.random() * (bounds.maxX - bounds.minX) + bounds.minX
-        go.y = Math.random() * (bounds.maxY - bounds.minY) + bounds.minY
-        return go;
-    }
-
     //add game object on the engine 
-    addGameObject(gameObject) {
+    addGameObject(gameObject: GameObject) {
         gameObject.engine = this;
 
         //add these event once to avoid duplications
@@ -90,7 +90,7 @@ export default class Loggie {
         gameObject.childAdded.addOnce(this.addGameObject.bind(this))
 
         this.gameObjects.push(gameObject);
-        if(!gameObject.parent){
+        if (!gameObject.parent) {
             this.parentGameObject.addChild(gameObject)
         }
 
@@ -105,18 +105,18 @@ export default class Loggie {
             gameObject.start()
         }
 
-        if(gameObject.resize){
+        if (gameObject.resize) {
             this.resizeableList.push(gameObject);
         }
         this.entityAdded.dispatch([gameObject])
 
-        if(this.callbacksWhenAdding && this.callbacksWhenAdding[gameObject.constructor.name]){
-            this.callbacksWhenAdding[gameObject.constructor.name].forEach(element => {                
+        if (this.callbacksWhenAdding && this.callbacksWhenAdding[gameObject.constructor.name]) {
+            this.callbacksWhenAdding[gameObject.constructor.name].forEach(element => {
                 element([gameObject]);
             });
-           this.callbacksWhenAdding[gameObject.constructor.name] = [];
+            this.callbacksWhenAdding[gameObject.constructor.name] = [];
         }
-        
+
         return gameObject;
     }
 
@@ -162,7 +162,8 @@ export default class Loggie {
         })
     }
 
-    update(delta, unscaledDelta) {
+    update(delta:number, unscaledDelta:number) {
+        Loggie.Time += unscaledDelta;
         if (!this.started) {
             return
         }
@@ -184,7 +185,7 @@ export default class Loggie {
             }
         });
 
-        this.engineStats.totalGameObjects = this.gameObjects.length;
+        // this.engineStats.totalGameObjects = this.gameObjects.length;
     }
     aspectChange(isPortrait) {
         this.resizeableList.forEach(element => {
