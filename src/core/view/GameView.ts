@@ -11,7 +11,7 @@ export default class GameView extends BaseComponent {
     public layer: string;
     public viewOffset: PIXI.Point;
     public baseScale: PIXI.Point;
-    public view?: PIXI.Container;
+    public view!: PIXI.Container;
 
     public lightRange: number
     public auxColor: number

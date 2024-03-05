@@ -1,22 +1,27 @@
 import * as signals from 'signals';
 import Loggie from '../Loggie';
 import { TagType } from '../TagType';
+import GameObject from './GameObject';
 
 export default class BaseComponent {
+    public engineID: number;
+
     private enabled: boolean = true;
-    protected engine: Loggie;
+    public engine: Loggie;
     protected buildFrame: number = 0;
     protected shouldBeRemoved: boolean = false;
-    public gameObject: GameObject;
+    public gameObject!: GameObject;
+    
     protected _tag: TagType = TagType.Untagged;
 
     constructor() {
         this.enabled
         this.buildFrame = 0;
-        this.gameObject = null;
         this.shouldBeRemoved = false;
         this.engine = Loggie.instance;
-        console.log(this.engine)
+
+        this.engineID = ++GameObject.ObjectCounter;
+
     }
     public get tag(): TagType { return this._tag };
     public setTag(tag: TagType): void {

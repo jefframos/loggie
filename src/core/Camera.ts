@@ -12,12 +12,18 @@ export default class Camera extends GameObject {
         min: 0,
         max: 1000
     }
+    protected targetZoom: number = 1;
+    protected followPoint: Vector3 = new Vector3();
     constructor() {
         super()
-        this.targetZoom =1// Game.Debug.zoom || 0.75;
+        this.targetZoom = 1// Game.Debug.zoom || 0.75;
         this.followPoint = new Vector3();
     }
-    update(delta) {
+    setFollowPoint(followPoint:Vector3) {
+        this.followPoint = followPoint;
+
+    }
+    update(delta:number) {
         super.update(delta);
 
         // Camera.ViewportSize.width = Game.Borders.width / Camera.Zoom 

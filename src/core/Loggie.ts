@@ -66,7 +66,7 @@ export default class Loggie {
     }
 
     //add game object using pooling system
-    poolGameObject(constructor: any, rebuild: boolean) {
+    poolGameObject(constructor: any, rebuild: boolean = false) {
         let element = Pool.instance.getElement(constructor)
         if (element.removeAllSignals) {
             element.removeAllSignals();

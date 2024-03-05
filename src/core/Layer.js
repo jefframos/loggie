@@ -38,8 +38,6 @@ export default class Layer {
     }
     addGameView(gameView) {
     
-        
-        console.log('add gere', gameView.view)
         this.gameViews.push(gameView)
         this.container.addChild(gameView.view)
     }

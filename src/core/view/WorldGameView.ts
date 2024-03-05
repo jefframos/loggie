@@ -1,13 +1,14 @@
 
+import GameObject from '../gameObject/GameObject';
 import GameView from './GameView';
 
 export default class WorldGameView extends GameView {
-    constructor(gameObject) {
+    private pixelPerfect:boolean = false;
+    constructor(gameObject:GameObject) {
         super(gameObject)
-        this.pixelPerfect = false;
     }
 
-    update(delta) {
+    update(delta:number) {
         super.update(delta);
         if (this.pixelPerfect) {
             this.view.x = Math.round(this.transform.position.x)

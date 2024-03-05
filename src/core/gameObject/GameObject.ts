@@ -6,17 +6,19 @@ import Transform from "./Transform";
 import Vector3 from './Vector3';
 import Loggie from '../Loggie';
 import { TagType } from '../TagType';
+import RigidBody from '../physics/RigidBody';
 
 export default class GameObject extends BaseComponent {
     static ObjectCounter = 0;
     protected isDestroyed = false;
 
-    private engineID: number;
+    public engineID: number;
     public transform: Transform;
     public children: Array<GameObject> = []
     public components: Array<BaseComponent> = [];
 
     public parent?: GameObject;
+    public rigidBody!: RigidBody;
 
     public gameObjectDestroyed = new signals.Signal();
     public childAdded = new signals.Signal();
