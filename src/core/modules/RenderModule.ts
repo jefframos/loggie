@@ -112,6 +112,8 @@ export default class RenderModule extends GameObject {
 
     }
     elementDestroyed(element) {
+
+        console.log('improve the type here')
         if (element.gameView.layer == RenderModule.RenderLayers.UILayer) {
             this.uiContainer.removeChild(element.gameView.view)
 
@@ -119,15 +121,10 @@ export default class RenderModule extends GameObject {
             this.uiOverlay.removeChild(element.gameView.view)
 
         } else if (element.gameView) {
-            this.layers[element.gameView.layer].removeGameView(element.gameView)
+            console.log(element.gameView)
+            this.layers.get(element.gameView.layer).removeGameView(element.gameView)
 
-        }
-        //????????? why did i commented this?
-        //Engine.RemoveFromListById(this.layers[element.gameView.layer].children, element.gameView.view)
-
-        if (element.debug) {
-            this.layers[RenderModule.RenderLayers.Debug].removeChild(element.debug)
-        }
+        }   
     }
     swapLayer(entity, layer) {
 

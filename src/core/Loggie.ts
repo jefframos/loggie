@@ -135,7 +135,7 @@ export default class Loggie {
         Loggie.RemoveFromListById(this.resizeableList, gameObject)
 
         if (gameObject.rigidBody) {
-            this.physics.removeAgent(gameObject)
+            this.physics.removeAgent(gameObject.rigidBody)
         }
     }
     //find go inside the engine (only on the top level)

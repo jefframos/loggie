@@ -4,6 +4,9 @@ import GameObject from "../gameObject/GameObject";
 import Loggie from '../Loggie';
 import Matter from "matter-js";
 import RigidBody from "../physics/RigidBody";
+import { ICollisionEnter } from "../physics/ICollisionEnter";
+import { ICollisionEnd } from "../physics/ICollisionEnd";
+import { ICollisionStay } from "../physics/ICollisionStay";
 
 export default class PhysicsModule extends GameObject {
     protected physicsEngine: Matter.Engine;
@@ -70,14 +73,14 @@ export default class PhysicsModule extends GameObject {
             event.pairs.forEach((collision) => {
                 var elementPosA = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyA.id);
                 if (elementPosA >= 0) {
-                    if (this.collisionList[elementPosA].collisionExit) {
-                        this.collisionList[elementPosA].collisionExit(collision.bodyB.gameObject)
+                    if (this.collisionList[elementPosA].gameObject.onCollisionExit) {
+                        this.collisionList[elementPosA].gameObject.onCollisionExit(collision.bodyB.gameObject)
                     }
                 }
                 var elementPosB = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyB.id);
                 if (elementPosB >= 0) {
-                    if (this.collisionList[elementPosB].collisionExit) {
-                        this.collisionList[elementPosB].collisionExit(collision.bodyA.gameObject)
+                    if (this.collisionList[elementPosB].gameObject.onCollisionExit) {
+                        this.collisionList[elementPosB].gameObject.onCollisionExit(collision.bodyA.gameObject)
                     }
                 }
             });
@@ -86,14 +89,14 @@ export default class PhysicsModule extends GameObject {
             event.pairs.forEach((collision) => {
                 var elementPosA = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyA.id);
                 if (elementPosA >= 0) {
-                    if (this.collisionList[elementPosA].collisionEnter) {
-                        this.collisionList[elementPosA].collisionEnter(collision.bodyB.gameObject)
+                    if (this.collisionList[elementPosA].gameObject.onCollisionEnter) {
+                        this.collisionList[elementPosA].gameObject.onCollisionEnter(collision.bodyB.gameObject)
                     }
                 }
                 var elementPosB = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyB.id);
                 if (elementPosB >= 0) {
-                    if (this.collisionList[elementPosB].collisionEnter) {
-                        this.collisionList[elementPosB].collisionEnter(collision.bodyA.gameObject)
+                    if (this.collisionList[elementPosB].gameObject.onCollisionEnter) {
+                        this.collisionList[elementPosB].gameObject.onCollisionEnter(collision.bodyA.gameObject)
                     }
                 }
             });
@@ -101,10 +104,10 @@ export default class PhysicsModule extends GameObject {
 
     }
     addPhysicBody(physicBody: RigidBody) {
-        console.log('physicBody', physicBody)
-        if (physicBody.gameObject.collisionEnter || physicBody.gameObject.collisionExit || physicBody.gameObject.collisionStay) {
+        if (physicBody.gameObject.onCollisionEnter || physicBody.gameObject.onCollisionExit || physicBody.gameObject.onCollisionStay) {
             this.collisionList.push(physicBody);
         }
+        console.log('physicBody', physicBody, this.collisionList)
         Matter.Composite.add(this.physicsEngine.world, physicBody.body);
 
         this.entityAdded.dispatch([physicBody])
@@ -118,11 +121,11 @@ export default class PhysicsModule extends GameObject {
     }
 
     removeAgent(agent: RigidBody) {
+        console.log(agent)
+        Matter.World.remove(this.physicsEngine.world, agent.body)
         Loggie.RemoveFromListById(this.nonStaticList, agent)
         Loggie.RemoveFromListById(this.collisionList, agent)
-        Matter.World.remove(this.physicsEngine.world, agent.body)
     }
-
     addAgent(agent: RigidBody) {
 
         var elementIndex = this.collisionList.map(function (x) { return x.engineID; }).indexOf(agent.engineID);
