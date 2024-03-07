@@ -5,9 +5,10 @@ import RenderModule from './modules/RenderModule';
 import Utils from './utils/Utils';
 
 export default class PerspectiveCamera extends Camera {
+    private renderModule!:RenderModule;
     constructor() {
         super()
-        
+
         this.cam = {
             x: 0, y: 250, z: 0, aspec: 1, fov: 5, near: 0, far: 20000
         }
@@ -16,7 +17,7 @@ export default class PerspectiveCamera extends Camera {
                 //window.GUI.add(this.cam, key).listen();
             }
         }
-       
+
         //window.GUI.add(this, 'targetZoom', 0.5, 3).listen();
     }
     start() {
@@ -38,7 +39,7 @@ export default class PerspectiveCamera extends Camera {
             this.renderModule.container.pivot.x = 0//Utils.lerp(this.renderModule.container.pivot.x, this.followPoint.x, 0.1)
             this.renderModule.container.pivot.y = 0//Utils.lerp(this.renderModule.container.pivot.y, this.followPoint.z, 0.1)
 
-            Camera.Zoom = Utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta*60)
+            Camera.Zoom = Utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta * 60)
 
             this.renderModule.container.scale.set(Camera.Zoom);
 
@@ -55,30 +56,29 @@ export default class PerspectiveCamera extends Camera {
     entityLateAdded(entityList) {
         entityList.forEach(entity => {
             this.entityAdded(entity);
-            
+
         });
     }
-    entityAdded(entity) {
-        if (entity.gameView.layer != RenderModule.RenderLayers.Gameplay &&
-            entity.gameView.layer != RenderModule.RenderLayers.Default) return;
+    entityAdded(gameView) {
+        console.log(gameView)
+        if (gameView.layer != RenderModule.RenderLayers.Gameplay &&
+            gameView.layer != RenderModule.RenderLayers.Default) return;
 
-        entity.gameView.view.x = entity.transform.position.x + entity.viewOffset.x
-        entity.gameView.view.y = entity.transform.position.z + entity.viewOffset.y + entity.transform.position.y
+        gameView.view.x = gameView.gameObject.transform.position.x + gameView.viewOffset.x
+        gameView.view.y = gameView.gameObject.transform.position.z + gameView.viewOffset.y + gameView.gameObject.transform.position.y
     }
     onRender() {
 
-        for (const key in this.renderModule.layers) {
-            if (Object.hasOwnProperty.call(this.renderModule.layers, key)) {
-                const layer = this.renderModule.layers[key];
+        //console.log(this.renderModule.layers)
+        for (const layer of this.renderModule.layers.values()) {
                 if (layer.cameraUpdate) {
-                    layer.gameViews.forEach(element => {
-                    
+                    layer.gameViews.forEach(element => {                        
                         if (element.gameObject) {
                             element.view.x = element.gameObject.transform.position.x + element.viewOffset.x
-                            element.view.y = element.gameObject.transform.position.z + element.viewOffset.y + element.gameObject.transform.position.y                           
+                            element.view.y = element.gameObject.transform.position.z + element.viewOffset.y + element.gameObject.transform.position.y
                         }
                     });
-                }
+                
             }
         }
     }

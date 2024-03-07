@@ -21,6 +21,8 @@ export default class RigidBody extends BaseComponent{
         this.appliedForce = new Vector3()
         this.friction = 0.1;
         this.latestAngle = 0;
+
+        this.body = Matter.Bodies.circle(0,0, 50, { isStatic: false, restitution: 1 });
     }
  
     get bodyID() {
@@ -33,30 +35,7 @@ export default class RigidBody extends BaseComponent{
     }
     build() {
         this.physics = new PhysicsProperties();
-    }
-    setDebug(radius = 15, color = 0xFFFFFF) {
-
-        //improve this debug to fit the body
-        if (!this.debug) {
-            this.debug = new PIXI.Graphics();
-            this.debug.tint = color;
-        }
-
-        this.debug.clear();
-
-        if (this.body) {
-
-            if (this.body.circleRadius) {
-                this.debug.lineStyle(1, 0xFFFFFF).drawCircle(0, 0, this.body.circleRadius)
-            } else {
-                let w = this.body.bounds.max.x - this.body.bounds.min.x
-                let h = this.body.bounds.max.y - this.body.bounds.min.y
-                this.debug.lineStyle(1, 0xFFFFFF).drawRect(this.body.bounds.min.x, this.body.bounds.min.y, w, h)
-            }
-        } else {
-            this.debug.lineStyle(1, 0xFFFFFF).drawCircle(0, 0, radius)
-        }
-    }
+    }    
     destroy() {
         super.destroy();      
     }
@@ -81,7 +60,7 @@ export default class RigidBody extends BaseComponent{
         return this.body
     }
     buildCircle(radius:number, isStatic = false) {
-        this.body = Matter.Bodies.circle(0,0, radius, { isStatic: false, restitution: 1 });
+        this.body.circleRadius = radius
         this.body.gameObject = this;
         this.engine.physics.addAgent(this)
         this.body.position.x = this.gameObject.x;

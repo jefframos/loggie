@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import GameView from './view/GameView';
 
 export default class Layer {
 
@@ -12,7 +13,7 @@ export default class Layer {
     static Sensor = 1 << 5;
     static FlightCompanion = 1 << 6;
     static EnemyBullet = 1 << 7;
-    
+
     // static Player = 0b0001;
     // static Enemy = 0b0011;
     // static Environment = 0b0010;
@@ -24,32 +25,40 @@ export default class Layer {
     static EnvironmentCollision = Layer.Player | Layer.Default | Layer.Enemy | Layer.Bullet
 
     static PlayerCollision = Layer.Environment | Layer.Default | Layer.Enemy | Layer.EnemyBullet
-    static EnemyCollision = Layer.Bullet | Layer.Environment | Layer.Default | Layer.Player | Layer.Sensor  | Layer.Enemy
+    static EnemyCollision = Layer.Bullet | Layer.Environment | Layer.Default | Layer.Player | Layer.Sensor | Layer.Enemy
 
     static BulletCollision = Layer.Environment | Layer.Default | Layer.Enemy
     static EnemyBulletCollision = Layer.Environment | Layer.Default | Layer.Player
 
-    constructor(name, container, sortable = true) {
+    public layerName: string;
+    public container: PIXI.Container;
+    public cameraUpdate: boolean = false;
+    public gameViews = []
+    public sortable: boolean = false;
+
+    constructor(name: string, container: PIXI.Container, sortable = true) {
         this.layerName = name;
         this.container = container;
+        this.cameraUpdate = false;
         this.gameViews = []
         this.sortable = sortable;
         this.container.sortableChildren = true;
     }
     addGameView(gameView) {
-    
+
         this.gameViews.push(gameView)
+        console.log(this.container, gameView, gameView.view)
         this.container.addChild(gameView.view)
     }
-    removeGameView(gameView) {
-
+    removeGameView(gameView:GameView) {
         for (let index = 0; index < this.gameViews.length; index++) {
             if (gameView == this.gameViews[index]) {
                 this.gameViews.splice(index, 1)
                 break
             }
         }
-
+        
+        console.log("LAYER REMOVE",gameView, gameView.view.parent == this.container.parent)
         this.container.removeChild(gameView.view)
     }
     addChild(element) {
@@ -63,7 +72,7 @@ export default class Layer {
     }
     onRender() {
 
-        for (var i = 0; i < this.gameViews.length; i++){
+        for (var i = 0; i < this.gameViews.length; i++) {
             this.gameViews[i].onRender();
         }
         // if (!this.sortable) return;

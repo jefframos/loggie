@@ -27,26 +27,27 @@ export default class PhysicsModule extends GameObject {
             // debug:true
         });
 
-        // const render = Matter.Render.create({
-        //     element: document.body,
-        //     engine: this.physicsEngine,
-        //     options: {
-        //         width: 800,
-        //         height: 600,
-        //         showAngleIndicator: true, // Show angle indicators
-        //         showCollisions: true,     // Show collision points
-        //         showVelocity: true,       // Show velocity vectors
-        //         wireframes: false,        // Set to true for wireframe rendering
-        //     },
-        // });
-        // Matter.Render.run(render);
+        const render = Matter.Render.create({
+            element: document.body,
+            engine: this.physicsEngine,
+            options: {
+                width: 1500,
+                height: 1500,
+                showAngleIndicator: true, // Show angle indicators
+                showCollisions: true,     // Show collision points
+                showVelocity: true,       // Show velocity vectors
+                wireframes: false,        // Set to true for wireframe rendering
+            },
+        });
+        Matter.Render.run(render);
 
         this.nonStaticList = []
         this.collisionList = []
 
 
         this.physicsStats = {
-            totalPhysicsEntities: 0
+            totalPhysicsEntities: 0,
+            agents: 0,
         }
         //window.gameplayFolder.add(this.physicsStats, 'totalPhysicsEntities').listen();
 
@@ -107,7 +108,7 @@ export default class PhysicsModule extends GameObject {
         if (physicBody.gameObject.onCollisionEnter || physicBody.gameObject.onCollisionExit || physicBody.gameObject.onCollisionStay) {
             this.collisionList.push(physicBody);
         }
-        console.log('physicBody', physicBody, this.collisionList)
+        //console.log('physicBody', physicBody, this.collisionList)
         Matter.Composite.add(this.physicsEngine.world, physicBody.body);
 
         this.entityAdded.dispatch([physicBody])
@@ -121,7 +122,7 @@ export default class PhysicsModule extends GameObject {
     }
 
     removeAgent(agent: RigidBody) {
-        console.log(agent)
+        //console.log(agent)
         Matter.World.remove(this.physicsEngine.world, agent.body)
         Loggie.RemoveFromListById(this.nonStaticList, agent)
         Loggie.RemoveFromListById(this.collisionList, agent)
@@ -146,7 +147,10 @@ export default class PhysicsModule extends GameObject {
         if (this.physicsEngine && delta) {
             Matter.Engine.update(this.physicsEngine, delta);
         }
+
+        
         this.physicsStats.totalPhysicsEntities = this.physicsEngine.detector.bodies.length
+        this.physicsStats.agents = this.collisionList.length
     }
 
 }

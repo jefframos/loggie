@@ -4,6 +4,9 @@ import GameObject from "./gameObject/GameObject";
 import PhysicsModule from "./modules/PhysicsModule";
 import Pool from './utils/Pool';
 import Camera from './Camera';
+import RigidBody from './physics/RigidBody';
+import * as dat from 'dat.gui';
+import BaseComponent from './gameObject/BaseComponent';
 
 export default class Loggie {
 
@@ -17,20 +20,26 @@ export default class Loggie {
     public static Time: number = 0;
 
     public entityAdded: signals.Signal = new signals.Signal();
+    public componentAdded: signals.Signal = new signals.Signal();
     private gameObjects: Array<GameObject>;
     private resizeableList: Array<GameObject>;
     public parentGameObject: GameObject;
     public physics: PhysicsModule;
     public camera: Camera;
+    public GUI: dat.GUI;
 
     private started: boolean = false;
 
     private callbacksWhenAdding: Map<string, Array<(gameObject: GameObject) => void>>;
 
+    private debug = {
+        physicsObjects:0,
+        agents:0,
+    }
+
     constructor() {
         Loggie._instance = this;
         
-        this.entityAdded = new signals.Signal()
         this.gameObjects = []
         this.resizeableList = []
         this.parentGameObject = new GameObject();
@@ -38,6 +47,9 @@ export default class Loggie {
         this.started = false;
         this.callbacksWhenAdding = new Map<string, Array<(gameObject: GameObject) => void>>();
 
+        this.GUI = new dat.GUI();
+       this.GUI.add(this.debug, 'physicsObjects').listen()
+       this.GUI.add(this.debug, 'agents').listen()
     }
 
     //helper to revome entity from list by its unique engine id
@@ -88,6 +100,7 @@ export default class Loggie {
         //add these event once to avoid duplications
         gameObject.gameObjectDestroyed.addOnce(this.wipeGameObject.bind(this))
         gameObject.childAdded.addOnce(this.addGameObject.bind(this))
+        gameObject.componentAdded.add(this.onComponentAdded.bind(this))
 
         this.gameObjects.push(gameObject);
         if (!gameObject.parent) {
@@ -121,7 +134,7 @@ export default class Loggie {
     }
 
     //add physics agent if there is one
-    addRigidBody(gameObject) {
+    addRigidBody(gameObject:RigidBody) {
         this.physics.addAgent(gameObject)
     }
     //destroy game object
@@ -137,6 +150,9 @@ export default class Loggie {
         if (gameObject.rigidBody) {
             this.physics.removeAgent(gameObject.rigidBody)
         }
+    }
+    onComponentAdded(component:BaseComponent){
+        this.componentAdded.dispatch(component);
     }
     //find go inside the engine (only on the top level)
     findByType(type) {
@@ -163,6 +179,9 @@ export default class Loggie {
     }
 
     update(delta:number, unscaledDelta:number) {
+
+        this.debug.physicsObjects = this.physics.physicsStats.totalPhysicsEntities
+        this.debug.agents = this.physics.physicsStats.agents
         Loggie.Time += unscaledDelta;
         if (!this.started) {
             return
@@ -187,7 +206,7 @@ export default class Loggie {
 
         // this.engineStats.totalGameObjects = this.gameObjects.length;
     }
-    aspectChange(isPortrait) {
+    aspectChange(isPortrait:boolean) {
         this.resizeableList.forEach(element => {
             if (element.aspectChange && element.enabled) {
                 element.aspectChange(isPortrait);

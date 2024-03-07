@@ -6,13 +6,13 @@ import GameObject from './GameObject';
 export default class BaseComponent {
     public engineID: number;
 
-    private enabled: boolean = true;
+    public enabled: boolean = true;
     public engine: Loggie;
     protected buildFrame: number = 0;
-    protected shouldBeRemoved: boolean = false;
+    public shouldBeRemoved: boolean = false;
     public gameObject!: GameObject;
     
-    protected _tag: TagType = TagType.Untagged;
+    public _tag: TagType = TagType.Untagged;
 
     constructor() {
         this.enabled
@@ -27,21 +27,21 @@ export default class BaseComponent {
     public setTag(tag: TagType): void {
         this._tag = tag
     };
-    protected reset() {
+    public reset() {
         this.shouldBeRemoved = false;
     }
-    protected disable() { this.enabled = false; }
-    protected enable() {
+    public disable() { this.enabled = false; }
+    public enable() {
         this.enabled = true;
         this.shouldBeRemoved = false;
     }
-    protected update(delta:number) {
+    public update(delta:number, unscaledDelta:number) {
         if (this.buildFrame == 0) {
             this.buildFrame++;
             this.afterBuild();
         }
     }
-    protected lateUpdate() {
+    public lateUpdate(delta:number, unscaledDelta:number) {
 
     }
     public build() {

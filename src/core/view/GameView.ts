@@ -11,12 +11,11 @@ export default class GameView extends BaseComponent {
     public layer: string;
     public viewOffset: PIXI.Point;
     public baseScale: PIXI.Point;
-    public view!: PIXI.Container;
+    public _view: PIXI.Container = new PIXI.Container();
 
-    public lightRange: number
-    public auxColor: number
-    public auxColorRGB: number
-
+    public get view(){
+        return this._view
+    }
     constructor(gameObject: GameObject) {
         super()
         this.setTag(TagType.Untagged);
@@ -24,10 +23,6 @@ export default class GameView extends BaseComponent {
         this.viewOffset = new PIXI.Point()
         this.baseScale = new PIXI.Point(1)
         this.gameObject = gameObject;
-
-        this.lightRange = 1;
-        this.auxColor = 0xFFFFFF;
-        this.auxColorRGB = Color.toRGB(this.auxColor)
     }
     get x() {
         return this.view.x
@@ -38,9 +33,7 @@ export default class GameView extends BaseComponent {
     get transform():Transform{
         return this.gameObject.transform;
     }
-    addChild(element:PIXI.DisplayObject){
-        this.view.addChild(element);
-    }
+  
     update(delta:number) {
         super.update(delta);
     }
@@ -52,5 +45,9 @@ export default class GameView extends BaseComponent {
     applyScale() {
         this.baseScale.x = this.view.scale.x;
         this.baseScale.y = this.view.scale.y;
+    }
+    destroy(): void {
+        super.destroy();
+        this.view.children = [];
     }
 }

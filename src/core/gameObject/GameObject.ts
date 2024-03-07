@@ -24,6 +24,7 @@ export default class GameObject extends BaseComponent {
     public childAdded = new signals.Signal();
     public childRemoved = new signals.Signal();
     public rigidbodyAdded = new signals.Signal();
+    public componentAdded = new signals.Signal();
     constructor() {
         super();
 
@@ -64,6 +65,7 @@ export default class GameObject extends BaseComponent {
         this.components.push(element);
         element.gameObject = this;
         element.enable();
+        this.componentAdded.dispatch(element);
         return element;
     }
     removeComponent(component: any) {
@@ -132,8 +134,8 @@ export default class GameObject extends BaseComponent {
             }
         }
     }
-    update(delta: number) {
-        super.update(delta);
+     update(delta: number, unscaledDelta:number) {
+        super.update(delta, unscaledDelta);
         for (let i = this.components.length - 1; i >= 0; i--) {
             const element = this.components[i];
             if (element.shouldBeRemoved) {
@@ -141,7 +143,7 @@ export default class GameObject extends BaseComponent {
                 continue;
             }
             if (element.enabled) {
-                element.update(delta);
+                element.update(delta, unscaledDelta);
             }
         }
 
@@ -152,7 +154,7 @@ export default class GameObject extends BaseComponent {
                 continue;
             }
             if (element.enabled) {
-                element.lateUpdate(delta);
+                element.lateUpdate(delta, unscaledDelta);
             }
         }
     }
