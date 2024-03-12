@@ -11,4 +11,7 @@ export default class  GameViewContainer extends GameView {
     addChild(element:PIXI.DisplayObject){
         this._view.addChild(element);
     }
+    removeChild(element:PIXI.DisplayObject){
+        this._view.removeChild(element);
+    }
 }

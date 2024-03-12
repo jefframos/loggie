@@ -4,11 +4,11 @@ import signals from 'signals';
 import ScreenManager from './ScreenManager';
 
 export default class Screen extends PIXI.Container {
-	protected targetContainer;
+	protected targetContainer:PIXI.Container | undefined;
 	protected nextScreen!: Screen;
 	protected built: boolean = false;
 
-	public label;
+	public label:string;
 	public screenManager!: ScreenManager;
 
 	public onEndTransitionOut = new signals.Signal();
@@ -16,7 +16,7 @@ export default class Screen extends PIXI.Container {
 	public onStartTransitionOut = new signals.Signal();
 	public onStartTransitionIn = new signals.Signal();
 
-	constructor(label:string, targetContainer:PIXI.Container) {
+	constructor(label:string, targetContainer:PIXI.Container | undefined = undefined) {
 		super();
 
 		this.label = label;
@@ -24,7 +24,7 @@ export default class Screen extends PIXI.Container {
 	}
 
 	//update all childs
-	update(delta:number) {		
+	update(delta:number, unscaledDelta:number) {		
 	}
 
 	destroy() {

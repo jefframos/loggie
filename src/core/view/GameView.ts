@@ -6,20 +6,30 @@ import { TagType } from '../TagType';
 import GameObject from '../gameObject/GameObject';
 import BaseComponent from '../gameObject/BaseComponent';
 import Transform from '../gameObject/Transform';
+import { Signal } from 'signals';
 
 export default class GameView extends BaseComponent {
-    public layer: string;
+    private _layer: string = RenderModule.RenderLayers.Gameplay;
     public viewOffset: PIXI.Point;
     public baseScale: PIXI.Point;
+    public pixelPerfect: boolean = false;
     public _view: PIXI.Container = new PIXI.Container();
-
-    public get view(){
+    public onSwapLayer: Signal = new Signal();
+    public get view() {
         return this._view
+    }
+    public set layer(value: string) {
+        if(this._layer != value){
+            this.onSwapLayer.dispatch(this, value);
+        }
+        this._layer = value;
+    }
+    public get layer() {
+        return this._layer;
     }
     constructor(gameObject: GameObject) {
         super()
         this.setTag(TagType.Untagged);
-        this.layer = RenderModule.RenderLayers.Gameplay
         this.viewOffset = new PIXI.Point()
         this.baseScale = new PIXI.Point(1)
         this.gameObject = gameObject;
@@ -30,12 +40,20 @@ export default class GameView extends BaseComponent {
     get y() {
         return this.view.y
     }
-    get transform():Transform{
+    get transform(): Transform {
         return this.gameObject.transform;
     }
-  
-    update(delta:number) {
-        super.update(delta);
+
+    update(delta: number, unscaledDelta: number) {
+        super.update(delta, unscaledDelta);
+
+        if (this.pixelPerfect) {
+            this.view.x = Math.round(this.transform.position.x)
+            this.view.y = Math.round(this.transform.position.z + this.transform.position.y)
+        } else {
+            this.view.x = this.transform.position.x
+            this.view.y = this.transform.position.z + this.transform.position.y
+        }
     }
     onRender() {
         if (this.gameObject) {

@@ -7,7 +7,7 @@ export default class BaseComponent {
     public engineID: number;
 
     public enabled: boolean = true;
-    public engine: Loggie;
+    public loggie: Loggie;
     protected buildFrame: number = 0;
     public shouldBeRemoved: boolean = false;
     public gameObject!: GameObject;
@@ -18,7 +18,7 @@ export default class BaseComponent {
         this.enabled
         this.buildFrame = 0;
         this.shouldBeRemoved = false;
-        this.engine = Loggie.instance;
+        this.loggie = Loggie.instance;
 
         this.engineID = ++GameObject.ObjectCounter;
 

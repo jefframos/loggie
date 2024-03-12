@@ -45,7 +45,7 @@ export default class RigidBody extends BaseComponent{
         this.gameObject.x = this.body.position.x;
         this.gameObject.z = this.body.position.y;
 
-        this.engine.physics.addAgent(this)
+        this.loggie.physics.addAgent(this)
 
         return this.body
     }
@@ -55,14 +55,14 @@ export default class RigidBody extends BaseComponent{
         this.gameObject.x = this.body.position.x;
         this.gameObject.z = this.body.position.y;
 
-        this.engine.physics.addAgent(this)
+        this.loggie.physics.addAgent(this)
 
         return this.body
     }
     buildCircle(radius:number, isStatic = false) {
         this.body.circleRadius = radius
         this.body.gameObject = this;
-        this.engine.physics.addAgent(this)
+        this.loggie.physics.addAgent(this)
         this.body.position.x = this.gameObject.x;
         this.body.position.y = this.gameObject.z;
         return this.body

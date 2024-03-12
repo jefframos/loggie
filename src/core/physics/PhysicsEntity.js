@@ -64,7 +64,7 @@ export default class PhysicsEntity extends GameObject {
         this.transform.position.z = this.rigidBody.position.y;
         this.type = 'rect'
 
-        this.engine.physics.addAgent(this)
+        this.loggie.physics.addAgent(this)
 
         return this.rigidBody
     }
@@ -75,7 +75,7 @@ export default class PhysicsEntity extends GameObject {
         this.transform.position.z = this.rigidBody.position.y;
         this.type = 'rect'
 
-        this.engine.physics.addAgent(this)
+        this.loggie.physics.addAgent(this)
 
         return this.rigidBody
     }
@@ -86,7 +86,7 @@ export default class PhysicsEntity extends GameObject {
         this.transform.position.z = this.rigidBody.position.y;
         this.type = 'circle'
 
-        this.engine.physics.addAgent(this)
+        this.loggie.physics.addAgent(this)
 
         return this.rigidBody
     }

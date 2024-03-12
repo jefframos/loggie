@@ -11,39 +11,41 @@ export default class Pool {
         }
         return Pool._instance;
     }
-    private pool: PoolType = {};
+    private pool: Map<string, any[]> = new Map();
 
+    constructor(){
+    }
     public reset() {
-        this.pool = {};
+        this.pool = new Map();
     }
     public getElement(constructor: any): any {
-        if (this.pool[constructor.name]) {
-            let elements = this.pool[constructor.name];
+        if (this.pool.has(constructor.name)) {
+            let elements = this.pool.get(constructor.name);
 
-            if (elements.length > 0) {
+            if (elements && elements.length > 0) {
                 let element = elements.shift();
                 return element;
             }
         } else {
-            this.pool[constructor.name] = []
+            this.pool.set(constructor.name, []);
         }
-
         let newElement = new constructor();
 
         return newElement;
 
     }
     public getPool(constructor: any) {
-        if (!this.pool[constructor.name]) {
+        if (!this.pool.has(constructor.name)) {
             return []
         }
 
-        return this.pool[constructor.name]
+        return this.pool.get(constructor.name)
     }
     public returnElement(element: any) {
-        if (!this.pool[element.constructor.name]) {
-            this.pool[element.constructor.name] = []
+        if (!this.pool.has(element.constructor.name)) {
+            this.pool.set(element.constructor.name, []);
         }
-        this.pool[element.constructor.name].push(element)
+        this.pool.get(element.constructor.name)?.push(element)
+
     }
 }

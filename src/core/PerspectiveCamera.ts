@@ -5,7 +5,7 @@ import RenderModule from './modules/RenderModule';
 import Utils from './utils/Utils';
 
 export default class PerspectiveCamera extends Camera {
-    private renderModule!:RenderModule;
+    private renderModule!: RenderModule;
     constructor() {
         super()
 
@@ -21,12 +21,13 @@ export default class PerspectiveCamera extends Camera {
         //window.GUI.add(this, 'targetZoom', 0.5, 3).listen();
     }
     start() {
-        this.renderModule = this.engine.findByType(RenderModule);
+        this.renderModule = this.loggie.findByType(RenderModule);
         this.renderModule.onNewRenderEntityAdded.add(this.entityAdded.bind(this));
         this.renderModule.onNewRenderEntityLateAdded.add(this.entityLateAdded.bind(this));
     }
-    update(delta) {
-        super.update(delta);
+    update(delta: number, unscaledTime: number) {
+        super.update(delta, unscaledTime);
+
 
         if (this.followPoint) {
             if (Utils.distance(this.renderModule.container.pivot.x, this.renderModule.container.pivot.y, this.followPoint.x, this.followPoint.z) > 30) {
@@ -71,14 +72,14 @@ export default class PerspectiveCamera extends Camera {
 
         //console.log(this.renderModule.layers)
         for (const layer of this.renderModule.layers.values()) {
-                if (layer.cameraUpdate) {
-                    layer.gameViews.forEach(element => {                        
-                        if (element.gameObject) {
-                            element.view.x = element.gameObject.transform.position.x + element.viewOffset.x
-                            element.view.y = element.gameObject.transform.position.z + element.viewOffset.y + element.gameObject.transform.position.y
-                        }
-                    });
-                
+            if (layer.cameraUpdate) {
+                layer.gameViews.forEach(element => {
+                    if (element.gameObject) {
+                        element.view.x = element.gameObject.transform.position.x + element.viewOffset.x
+                        element.view.y = element.gameObject.transform.position.z + element.viewOffset.y + element.gameObject.transform.position.y
+                    }
+                });
+
             }
         }
     }
