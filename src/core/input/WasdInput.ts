@@ -6,6 +6,14 @@ import { Signal } from 'signals';
 import { InputDirections } from './InputDirection';
 import MathUtils from "loggie/utils/MathUtils";
 
+enum Direction {
+    None,
+    Up,
+    Down,
+    Left,
+    Right
+}
+
 export default class WasdInput extends GameObject implements InputDirections {
     onPointerDown: Signal = new Signal();
     onPointerUp: Signal = new Signal();
@@ -14,22 +22,16 @@ export default class WasdInput extends GameObject implements InputDirections {
     private rawDirection: PIXI.Point = new PIXI.Point();
     public angle: number = 0;
 
+    private keysPressed: Array<Direction> = [];
+
     build(): void {
         super.build();
-        // const cursors = this.scene.input.keyboard?.createCursorKeys();
-        // const wasdKeys = this.scene.input.keyboard?.addKeys('W,A,S,D') as {
-        //     W: Phaser.Input.Keyboard.Key;
-        //     A: Phaser.Input.Keyboard.Key;
-        //     S: Phaser.Input.Keyboard.Key;
-        //     D: Phaser.Input.Keyboard.Key;
-        // };
-
         document.addEventListener('keydown', (event: any) => {
-            this.handleKeyPress(event.key);
+            this.handleKeyDown(event);
         });
 
         document.addEventListener('keyup', (event: any) => {
-            this.handleKeyRelease(event.key);
+            this.handleKeyUp(event);
         });
 
 
@@ -41,89 +43,80 @@ export default class WasdInput extends GameObject implements InputDirections {
     getNormal(): number {
         return this.getPressed() ? 1 : 0;
     }
-    getPressed(): boolean {   
+    getPressed(): boolean {
         return this.rawDirection.y != 0 || this.rawDirection.x != 0;
     }
     getDirections(): PIXI.Point {
         return this.direction;
     }
-    handleKeyPress(key: string) {
-        switch (key) {
-            case 'w':
-            case 'W':
-            case 'ArrowUp':
-                this.rawDirection.y = -1
-                break;
-            case 'a':
-            case 'A':
-            case 'ArrowLeft':
-                this.rawDirection.x = -1
-                break;
-            case 's':
-            case 'S':
-            case 'ArrowDown':
-                this.rawDirection.y = 1
-                break;
-            case 'd':
-            case 'D':
-            case 'ArrowRight':
-                this.rawDirection.x = 1;
-                break;
-            default:
-                // this.rawDirection.x = 0;
-                // this.rawDirection.y = 0;
-                // this.direction.x = 0;
-                // this.direction.y = 0;
-        }
-        
-        if(this.getPressed()){
-        }
+    update(delta:number, unscaledTime:number){
+        super.update(delta, unscaledTime);
+        this.rawDirection.x = this.findHorizontal()
+        this.rawDirection.y = this.findVertical()
         this.angle = Math.atan2(this.rawDirection.y, this.rawDirection.x);
         this.direction.x = Math.cos(this.angle);
         this.direction.y = Math.sin(this.angle);
-
         MathUtils.normalizePoint(this.direction)
     }
-
-    handleKeyRelease(key: string) {
-        switch (key) {
+    findHorizontal():number{
+        for (let index = 0; index < this.keysPressed.length; index++) {
+            const element = this.keysPressed[index];
+            if(element == Direction.Left){
+                return -1;
+            }else if(element == Direction.Right){
+                return 1;
+            }
+        }
+        return 0;
+    }
+    findVertical():number{
+        for (let index = 0; index < this.keysPressed.length; index++) {
+            const element = this.keysPressed[index];
+            if(element == Direction.Up){
+                return -1;
+            }else if(element == Direction.Down){
+                return 1;
+            }
+        }
+        return 0;
+    }
+    private handleKeyDown(event: KeyboardEvent) {
+        const direction = this.getDirectionFromKeyCode(event.key);
+        if (direction !== Direction.None) {
+            if (!this.keysPressed.includes(direction)) {
+                this.keysPressed.unshift(direction);
+            }
+        }
+    }
+    private handleKeyUp(event: KeyboardEvent) {
+        const direction = this.getDirectionFromKeyCode(event.key);
+        if (direction !== Direction.None) {
+            if (this.keysPressed.includes(direction)) {
+                this.keysPressed.splice(this.keysPressed.indexOf(direction), 1);
+            }
+        }
+    }    
+    private getDirectionFromKeyCode(keyCode: string): Direction {
+        switch (keyCode) {
             case 'w':
             case 'W':
+            case 'ArrowUp':
+                return Direction.Up;
             case 's':
             case 'S':
-            case 'ArrowUp':
             case 'ArrowDown':
-                this.rawDirection.y = 0;
-                break;
+                return Direction.Down;
             case 'a':
             case 'A':
+            case 'ArrowLeft':
+                return Direction.Left;
             case 'd':
             case 'D':
-            case 'ArrowLeft':
             case 'ArrowRight':
-                this.rawDirection.x = 0;
-                break;
+                return Direction.Right;
             default:
-                // this.rawDirection.x = 0;
-                // this.rawDirection.y = 0;
-                // this.direction.x = 0;
-                // this.direction.y = 0;
+                return Direction.None;
         }
-
-
-        this.angle = Math.atan2(this.rawDirection.y, this.rawDirection.x);
-        if (Math.round(this.rawDirection.y) == 0 && Math.round(this.rawDirection.x) == 0) {
-            this.direction.x = 0;
-            this.direction.y = 0;
-        } else {
-            this.direction.x = Math.cos(this.angle);
-            this.direction.y = Math.sin(this.angle);
-        }
-
     }
-
-    lateUpdate(delta: number, time: number): void {
-        super.lateUpdate(delta, time);
-
-    }
+   
 }

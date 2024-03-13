@@ -1,0 +1,16 @@
+export enum ShapeEnum {
+  ITwo = 0,
+  I = 1,
+  J = 2,
+  L = 3,
+  O = 4,
+  S = 5,
+  T = 6,
+  Z = 7,
+  OneSlot = 8,
+  TwoByTwo = 9,
+  ThreeByThree = 10,
+  LBlock = 11,
+  TBlock = 12,
+  Cross = 13,
+}
