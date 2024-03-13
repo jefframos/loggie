@@ -6,7 +6,7 @@ import Pool from './utils/Pool';
 import Camera from './Camera';
 import RigidBody from './physics/RigidBody';
 import BaseComponent from './gameObject/BaseComponent';
-import RenderModule from './modules/RenderModule';
+import RenderModule from './render/RenderModule';
 import Overlay from './ui/Overlay';
 
 export default class Loggie {
@@ -79,7 +79,7 @@ export default class Loggie {
     }
 
     //add game object using pooling system
-    poolGameObject(constructor: any, rebuild: boolean = false) {
+    poolGameObject<T>(constructor: any, rebuild: boolean = false, ...buildParams: any | undefined[]) : T{
         let element = Pool.instance.getElement(constructor)
         if (element.removeAllSignals) {
             element.removeAllSignals();
@@ -89,13 +89,13 @@ export default class Loggie {
         element.enable()
         let go = this.addGameObject(element);
         if (rebuild) {
-            element.build();
+            element.build(buildParams);
         }
-        return go;
+        return go as T;
     }
 
     //add game object on the engine 
-    addGameObject(gameObject: GameObject) {
+    addGameObject<T>(gameObject: GameObject) : T{
         gameObject.loggie = this;
 
         //add these event once to avoid duplications
@@ -131,7 +131,7 @@ export default class Loggie {
             this.callbacksWhenAdding[gameObject.constructor.name] = [];
         }
 
-        return gameObject;
+        return gameObject as T;
     }
 
     //add physics agent if there is one
@@ -139,11 +139,11 @@ export default class Loggie {
         this.physics.addAgent(gameObject)
     }
     //destroy game object
-    destroyGameObject(gameObject) {
+    destroyGameObject(gameObject:GameObject) {
         gameObject.destroy()
     }
     //remove the game object from the world
-    wipeGameObject(gameObject) {
+    wipeGameObject(gameObject:GameObject) {
 
         Loggie.RemoveFromListById(this.gameObjects, gameObject)
         Loggie.RemoveFromListById(this.resizeableList, gameObject)
@@ -155,8 +155,7 @@ export default class Loggie {
     onComponentAdded(component: BaseComponent) {
         this.componentAdded.dispatch(component);
     }
-    //find go inside the engine (only on the top level)
-    findByType<T>(type:any): GameObject | null{
+    tryFindByType<T>(type:any, out:any): void{
         let elementFound = null
 
         for (let index = 0; index < this.gameObjects.length; index++) {
@@ -166,7 +165,20 @@ export default class Loggie {
                 break
             }
         }
-        return elementFound;
+        out = elementFound as T;
+    }
+    //find go inside the engine (only on the top level)
+    findByType<T>(type:any): T | null{
+        let elementFound = null
+
+        for (let index = 0; index < this.gameObjects.length; index++) {
+            const element = this.gameObjects[index];
+            if (element instanceof type) {
+                elementFound = element;
+                break
+            }
+        }
+        return elementFound as T;
     }
     //start engine and the game objects
     start() {

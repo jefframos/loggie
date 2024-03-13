@@ -60,11 +60,14 @@ export default class GameObject extends BaseComponent {
         }
         return elementFound;
     }
-    addComponent(constructor: any) {
+    addComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
         let element = Pool.instance.getElement(constructor)
         this.components.push(element);
         element.gameObject = this;
         element.enable();
+        if(autoBuild){
+            element.build(buildParams);
+        }
         this.componentAdded.dispatch(element);
         return element;
     }
@@ -90,7 +93,7 @@ export default class GameObject extends BaseComponent {
         return { x: Math.cos(rad), y: Math.sin(rad) }
     }
     get facingDirection() {
-        let rad = this.transform.angle * 180 * Math.PI
+        let rad = this.transform.angle;
         return rad
     }
     get x():number{

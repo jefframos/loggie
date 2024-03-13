@@ -1,14 +1,17 @@
 
+import * as PIXI from "pixi.js";
 
 import GameObject from '../gameObject/GameObject';
 import { Signal } from 'signals';
+import { InputDirections } from './InputDirection';
+import MathUtils from "loggie/utils/MathUtils";
 
 export default class WasdInput extends GameObject implements InputDirections {
     onPointerDown: Signal = new Signal();
     onPointerUp: Signal = new Signal();
 
-    public direction: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
-    private rawDirection: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
+    public direction: PIXI.Point = new PIXI.Point();
+    private rawDirection: PIXI.Point = new PIXI.Point();
     public angle: number = 0;
 
     build(): void {
@@ -21,11 +24,11 @@ export default class WasdInput extends GameObject implements InputDirections {
         //     D: Phaser.Input.Keyboard.Key;
         // };
 
-        this.scene.input.keyboard?.on('keydown', (event: any) => {
+        document.addEventListener('keydown', (event: any) => {
             this.handleKeyPress(event.key);
         });
 
-        this.scene.input.keyboard?.on('keyup', (event: any) => {
+        document.addEventListener('keyup', (event: any) => {
             this.handleKeyRelease(event.key);
         });
 
@@ -41,8 +44,8 @@ export default class WasdInput extends GameObject implements InputDirections {
     getPressed(): boolean {   
         return this.rawDirection.y != 0 || this.rawDirection.x != 0;
     }
-    getDirections(): Phaser.Math.Vector2 {
-        return this.direction.normalize();
+    getDirections(): PIXI.Point {
+        return this.direction;
     }
     handleKeyPress(key: string) {
         switch (key) {
@@ -75,9 +78,11 @@ export default class WasdInput extends GameObject implements InputDirections {
         
         if(this.getPressed()){
         }
-        this.angle = this.rawDirection.angle();
+        this.angle = Math.atan2(this.rawDirection.y, this.rawDirection.x);
         this.direction.x = Math.cos(this.angle);
         this.direction.y = Math.sin(this.angle);
+
+        MathUtils.normalizePoint(this.direction)
     }
 
     handleKeyRelease(key: string) {
@@ -106,7 +111,7 @@ export default class WasdInput extends GameObject implements InputDirections {
         }
 
 
-        this.angle = this.rawDirection.angle();
+        this.angle = Math.atan2(this.rawDirection.y, this.rawDirection.x);
         if (Math.round(this.rawDirection.y) == 0 && Math.round(this.rawDirection.x) == 0) {
             this.direction.x = 0;
             this.direction.y = 0;

@@ -1,8 +1,11 @@
 import * as PIXI from 'pixi.js';
 
 import Camera from './Camera';
-import RenderModule from './modules/RenderModule';
+import RenderModule from './render/RenderModule';
 import Utils from './utils/Utils';
+import { RenderLayers } from './render/RenderLayers';
+import GameView from './view/GameView';
+import GuiDebugger from './debug/GuiDebugger';
 
 export default class PerspectiveCamera extends Camera {
     private renderModule!: RenderModule;
@@ -10,13 +13,15 @@ export default class PerspectiveCamera extends Camera {
         super()
 
         this.cam = {
-            x: 0, y: 250, z: 0, aspec: 1, fov: 5, near: 0, far: 20000
+            x: 0, y: 250, z: 1, aspec: 1, fov: 5, near: 0, far: 20000
         }
         for (const key in this.cam) {
             if (Object.hasOwnProperty.call(this.cam, key)) {
                 //window.GUI.add(this.cam, key).listen();
             }
         }
+
+        GuiDebugger.instance.listenFolder('CAMERA',this.cam)
 
         //window.GUI.add(this, 'targetZoom', 0.5, 3).listen();
     }
@@ -29,41 +34,43 @@ export default class PerspectiveCamera extends Camera {
         super.update(delta, unscaledTime);
 
 
+        this.targetZoom = this.cam.z
+
         if (this.followPoint) {
-            if (Utils.distance(this.renderModule.container.pivot.x, this.renderModule.container.pivot.y, this.followPoint.x, this.followPoint.z) > 30) {
+            // if (Utils.distance(this.renderModule.container.pivot.x, this.renderModule.container.pivot.y, this.followPoint.x, this.followPoint.z) > 30) {
 
-                let angle = Math.atan2(this.renderModule.container.pivot.y - this.followPoint.z,
-                    this.renderModule.container.pivot.x - this.followPoint.x)
-            } else {
+            //     let angle = Math.atan2(this.renderModule.container.pivot.y - this.followPoint.z,
+            //         this.renderModule.container.pivot.x - this.followPoint.x)
+            // } else {
 
-            }
-            this.renderModule.container.pivot.x = 0//Utils.lerp(this.renderModule.container.pivot.x, this.followPoint.x, 0.1)
-            this.renderModule.container.pivot.y = 0//Utils.lerp(this.renderModule.container.pivot.y, this.followPoint.z, 0.1)
+            // }
+            this.targetPivot.x = Utils.lerp(this.targetPivot.x, this.followPoint.x, 0.1)
+            this.targetPivot.y = Utils.lerp(this.targetPivot.y, this.followPoint.z, 0.1)
+
+          
 
             Camera.Zoom = Utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta * 60)
 
             this.renderModule.container.scale.set(Camera.Zoom);
 
+            this.renderModule.setCameraPivots(this.targetPivot);
+            
         }
     }
-    setFollowPoint(followPoint) {
-        this.followPoint = followPoint;
-
-    }
     snapFollowPoint() {
-        this.renderModule.container.pivot.x = this.followPoint.x
-        this.renderModule.container.pivot.y = this.followPoint.z
+        this.targetPivot.x = this.followPoint.x
+        this.targetPivot.y = this.followPoint.z
+        this.renderModule.setCameraPivots(this.targetPivot);
     }
-    entityLateAdded(entityList) {
+    entityLateAdded(entityList: GameView[]) {
         entityList.forEach(entity => {
             this.entityAdded(entity);
 
         });
     }
-    entityAdded(gameView) {
-        console.log(gameView)
-        if (gameView.layer != RenderModule.RenderLayers.Gameplay &&
-            gameView.layer != RenderModule.RenderLayers.Default) return;
+    entityAdded(gameView: GameView) {
+        if (gameView.layer != RenderLayers.Gameplay &&
+            gameView.layer != RenderLayers.Default) return;
 
         gameView.view.x = gameView.gameObject.transform.position.x + gameView.viewOffset.x
         gameView.view.y = gameView.gameObject.transform.position.z + gameView.viewOffset.y + gameView.gameObject.transform.position.y

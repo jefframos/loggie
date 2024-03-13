@@ -13,6 +13,7 @@ export default class Camera extends GameObject {
         max: 1000
     }
     protected targetZoom: number = 1;
+    protected targetPivot: PIXI.Point = new PIXI.Point();
     protected followPoint: Vector3 = new Vector3();
     constructor() {
         super()
@@ -21,7 +22,9 @@ export default class Camera extends GameObject {
     }
     setFollowPoint(followPoint: Vector3) {
         this.followPoint = followPoint;
-
+    }
+    setZoom(targetZoom: number = 1) {
+        this.targetZoom = targetZoom;
     }
     update(delta: number, unscaledTime: number) {
         super.update(delta, unscaledTime);

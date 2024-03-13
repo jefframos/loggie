@@ -1,15 +1,16 @@
 import * as PIXI from 'pixi.js';
 
 import Color from '../utils/Color';
-import RenderModule from '../modules/RenderModule';
+import RenderModule from '../render/RenderModule';
 import { TagType } from '../TagType';
 import GameObject from '../gameObject/GameObject';
 import BaseComponent from '../gameObject/BaseComponent';
 import Transform from '../gameObject/Transform';
 import { Signal } from 'signals';
+import { RenderLayers } from '../render/RenderLayers';
 
 export default class GameView extends BaseComponent {
-    private _layer: string = RenderModule.RenderLayers.Gameplay;
+    private _layer: string = RenderLayers.Gameplay;
     public viewOffset: PIXI.Point;
     public baseScale: PIXI.Point;
     public pixelPerfect: boolean = false;

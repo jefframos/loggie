@@ -2,39 +2,12 @@ import * as PIXI from 'pixi.js';
 import GameView from './view/GameView';
 
 export default class Layer {
-
-    static Nothing = 0;
-    static Everything = 1;
-    static Default = 2;
-    static Player = 1 << 1;
-    static Enemy = 1 << 2;
-    static Environment = 1 << 3;
-    static Bullet = 1 << 4;
-    static Sensor = 1 << 5;
-    static FlightCompanion = 1 << 6;
-    static EnemyBullet = 1 << 7;
-
-    // static Player = 0b0001;
-    // static Enemy = 0b0011;
-    // static Environment = 0b0010;
-    // static Bullet = 0b0100;
-    // static Sensor = 0b0101;
-    // static FlightCompanion =  0b0111;
-    // static EnemyBullet =0b1001;
-
-    static EnvironmentCollision = Layer.Player | Layer.Default | Layer.Enemy | Layer.Bullet
-
-    static PlayerCollision = Layer.Environment | Layer.Default | Layer.Enemy | Layer.EnemyBullet
-    static EnemyCollision = Layer.Bullet | Layer.Environment | Layer.Default | Layer.Player | Layer.Sensor | Layer.Enemy
-
-    static BulletCollision = Layer.Environment | Layer.Default | Layer.Enemy
-    static EnemyBulletCollision = Layer.Environment | Layer.Default | Layer.Player
-
     public layerName: string;
     public container: PIXI.Container;
     public cameraUpdate: boolean = false;
-    public gameViews = []
+    public gameViews:GameView[] = []
     public sortable: boolean = false;
+    public scrollable: boolean = true;
 
     constructor(name: string, container: PIXI.Container, sortable = true) {
         this.layerName = name;
@@ -44,10 +17,9 @@ export default class Layer {
         this.sortable = sortable;
         this.container.sortableChildren = true;
     }
-    addGameView(gameView) {
+    addGameView(gameView:GameView) {
 
         this.gameViews.push(gameView)
-        console.log(this.container, gameView, gameView.view)
         this.container.addChild(gameView.view)
     }
     removeGameView(gameView:GameView) {
@@ -56,9 +28,7 @@ export default class Layer {
                 this.gameViews.splice(index, 1)
                 break
             }
-        }
-        
-        console.log("LAYER REMOVE",gameView, gameView.view.parent == this.container.parent)
+        }        
         this.container.removeChild(gameView.view)
     }
     addChild(element) {

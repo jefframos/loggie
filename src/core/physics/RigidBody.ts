@@ -6,13 +6,15 @@ import Utils from "../utils/Utils";
 import Vector3 from "../gameObject/Vector3";
 import BaseComponent from "../gameObject/BaseComponent";
 
-export default class RigidBody extends BaseComponent{
+export default class RigidBody extends BaseComponent {
     //public physics: PhysicsProperties = new PhysicsProperties();
     public body!: Body;
     public autoSetAngle: boolean = true;
     public appliedForce: Vector3 = new Vector3()
     public friction: number = 0.1;
     public latestAngle: number = 0;
+    public latestPosition: Vector3 = new Vector3();
+    public positionDiff: Vector3 = new Vector3();
     public physics: PhysicsProperties = new PhysicsProperties();;
 
     constructor() {
@@ -22,24 +24,24 @@ export default class RigidBody extends BaseComponent{
         this.friction = 0.1;
         this.latestAngle = 0;
 
-        this.body = Matter.Bodies.circle(0,0, 50, { isStatic: false, restitution: 1 });
+        this.body = Matter.Bodies.circle(0, 0, 50, { isStatic: false, restitution: 1 });
     }
- 
+
     get bodyID() {
         return this.body.id;
     }
-    get type(){
+    get type() {
         return this.body.type;
     }
     start() {
     }
     build() {
         this.physics = new PhysicsProperties();
-    }    
-    destroy() {
-        super.destroy();      
     }
-    buildRect(x:number, y:number, width:number, height:number, isStatic = false) {
+    destroy() {
+        super.destroy();
+    }
+    buildRect(x: number, y: number, width: number, height: number, isStatic = false) {
         this.body = Matter.Bodies.rectangle(x, y, width, height, { isStatic: isStatic });
         this.body.gameObject = this;
         this.gameObject.x = this.body.position.x;
@@ -49,7 +51,7 @@ export default class RigidBody extends BaseComponent{
 
         return this.body
     }
-    buildVertices(x:number, y:number, vertices:Matter.Vector[][], isStatic:boolean = false) {
+    buildVertices(x: number, y: number, vertices: Matter.Vector[][], isStatic: boolean = false) {
         this.body = Matter.Bodies.fromVertices(x, y, vertices, { isStatic: isStatic });
         this.body.gameObject = this;
         this.gameObject.x = this.body.position.x;
@@ -59,7 +61,7 @@ export default class RigidBody extends BaseComponent{
 
         return this.body
     }
-    buildCircle(radius:number, isStatic = false) {
+    buildCircle(radius: number, isStatic = false) {
         this.body.circleRadius = radius
         this.body.gameObject = this;
         this.loggie.physics.addAgent(this)
@@ -67,29 +69,35 @@ export default class RigidBody extends BaseComponent{
         this.body.position.y = this.gameObject.z;
         return this.body
     }
-    applyForce(force:Vector3) {
+    applyForce(force: Vector3) {
         if (!this.body) return;
 
         this.appliedForce.x = force.x
         this.appliedForce.y = force.z
     }
-    applyVelocity(force:Vector3) {
-        Matter.Body.setVelocity(this.body, force)
+    applyVelocity(force: Vector3) {
+        Matter.Body.
+            setVelocity(this.body, force)
     }
-    update(delta:number) {
 
-        super.update(delta);
+    update(delta: number, unscaledTime: number) {
+        super.update(delta, unscaledTime);
+
+        this.positionDiff.x = this.body.position.x - this.body.positionPrev.x
+        this.positionDiff.z = this.body.position.y - this.body.positionPrev.y
 
         this.physics.update();
+
 
         this.gameObject.x = this.body.position.x;
         this.gameObject.z = this.body.position.y;
 
         if (this.autoSetAngle && this.physics.magnitude > 0) {
-            this.gameObject.angle = Math.atan2(this.physics.velocity.z, this.physics.velocity.x);
+            this.gameObject.transform.angle = Math.atan2(this.physics.velocity.z, this.physics.velocity.x);
+            //this.gameObject.transform.angle = Math.atan2(this.positionDiff.z, this.positionDiff.x);
         }
         if (this.physics.magnitude > 0) {
-            this.latestAngle = this.gameObject.angle;
+            this.latestAngle = this.gameObject.transform.angle;
         }
         this.physics.unscaleVelocity.x = this.physics.velocity.x / delta;
         this.physics.unscaleVelocity.z = this.physics.velocity.z / delta;
@@ -104,16 +112,21 @@ export default class RigidBody extends BaseComponent{
         this.appliedForce.z = Utils.lerp(this.appliedForce.z, 0, this.friction);
 
         this.applyVelocity(this.physics.force2D);
-        this.physics.angle = this.gameObject.angle
+        this.physics.angle = this.gameObject.transform.angle
 
-        if (this.debug) {
-
-            this.debug.x = this.gameObject.x
-            this.debug.y = this.gameObject.z
-            this.debug.rotation = this.physics.angle
-
-        }
-
+        
+    }
+    public lateUpdate(delta: number, unscaledDelta: number): void {
+        super.lateUpdate(delta, unscaledDelta)
+        this.latestPosition.x = this.gameObject.transform.position.x;
+        this.latestPosition.y = this.gameObject.transform.position.y;
+        this.latestPosition.z = this.gameObject.transform.position.z;
+    }
+    set velocityX(value: number) {
+        this.physics.velocity.x = value;
+    }
+    set velocityY(value: number) {
+        this.physics.velocity.z = value;
     }
     set layerMask(value) {
         this.body.collisionFilter.mask = value;
@@ -124,7 +137,7 @@ export default class RigidBody extends BaseComponent{
     set layerCategory(value) {
         this.body.collisionFilter.category = value;
     }
-    
+
     get radius() {
         return this.body.circleRadius;
     }
@@ -152,20 +165,20 @@ export default class RigidBody extends BaseComponent{
     /**
      * @param {number} value
      */
-    set x(value:number) {
+    set x(value: number) {
         Matter.Body.setPosition(this.body, { x: value, y: this.body.position.y })
         this.gameObject.x = this.body.position.x;
     }
     /**
      * @param {number} value
      */
-    set y(value:number) {
+    set y(value: number) {
         this.gameObject.y = value;
     }
     /**
      * @param {number} value
      */
-    set z(value:number) {
+    set z(value: number) {
         Matter.Body.setPosition(this.body, { x: this.body.position.x, y: value })
         this.gameObject.z = this.body.position.y;
     }

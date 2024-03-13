@@ -1,8 +1,13 @@
 
 import * as PIXI from 'pixi.js';
-import UiVew from '../ui/UiView';
 import GameObject from '../gameObject/GameObject';
 import { Signal } from 'signals';
+import AppSingleton from 'loggie/AppSingleton';
+import GameViewGraphics from '../view/GameViewGraphics';
+import { InputDirections } from './InputDirection';
+import MathUtils from 'loggie/utils/MathUtils';
+import GameViewContainer from '../view/GameViewContainer';
+import { RenderLayers } from '../render/RenderLayers';
 
 export default class AnalogInput extends GameObject implements InputDirections {
     onPointerDown: Signal = new Signal();
@@ -10,89 +15,87 @@ export default class AnalogInput extends GameObject implements InputDirections {
 
     pointerDown: boolean = false;
     pointerUp: boolean = true;
-    pointerLatestPosition: PIXI.Point = new PIXI.Point(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
-    pointerDownPosition: PIXI.Point = new PIXI.Point(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+    pointerLatestPosition: PIXI.Point = new PIXI.Point();
+    pointerDownPosition: PIXI.Point = new PIXI.Point();
 
     distanceFromOrigin: number = 0;
-    pointerMoveDirectionFromOrigin: PIXI.Point = new PIXI.Point(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+    pointerMoveDirectionFromOrigin: PIXI.Point = new PIXI.Point();
     directionAngle: number = 0;
+    graphicsContainer?: GameViewContainer;
 
-    clickOrigin?: UiVew;
-    releaseOrigin?: UiVew;
+    clickOrigin?: PIXI.Graphics;
+    releaseOrigin?: PIXI.Graphics;
 
     stickMaxDistance: number = 100;
     stickDistance: number = 0;
 
 
-    build(centerTexture: string, atlas: string, areaTexture: string): void {
+    build(): void {
         super.build();
 
-        if (areaTexture) {
+        this.graphicsContainer = this.addComponent(GameViewContainer, true)
+        this.graphicsContainer.layer = RenderLayers.UILayerOverlay
 
-            this.clickOrigin = this.addFromPool(UiVew) as UiVew
-            this.clickOrigin.build(areaTexture, atlas);
-            this.clickOrigin.setAsUI();
-            this.clickOrigin.view.setScale(this.stickMaxDistance / this.clickOrigin.view.width * 2, this.stickMaxDistance / this.clickOrigin.view.height * 2);
-            this.clickOrigin.view.setVisible(false);
-            this.clickOrigin.view.setScrollFactor(0)
-            this.clickOrigin.view.setDepth(100)
-            this.clickOrigin.view.setOrigin(0.5, 0.5)
-        }
+        this.clickOrigin = new PIXI.Graphics();
+        this.clickOrigin.beginFill(0xFFFFFF).drawCircle(0, 0, this.stickMaxDistance)
+        this.clickOrigin.alpha = 0.2
 
-        this.releaseOrigin = this.addFromPool(UiVew) as UiVew
-        this.releaseOrigin.build(centerTexture, atlas);
-        this.releaseOrigin.setAsUI();
-        this.releaseOrigin.view.setScale(1, 1);
-        this.releaseOrigin.view.setScrollFactor(0)
-        this.releaseOrigin.view.setDepth(100)
-        this.releaseOrigin.view.setOrigin(0.5, 0.5)
 
-        this.releaseOrigin.view.setVisible(false);
+        this.releaseOrigin = new PIXI.Graphics();
+        this.releaseOrigin.beginFill(0xFFFFFF).drawCircle(0, 0, 20)
 
-        this.scene.input.on('pointerdown', (pointer: any) => {
-            // Log the initial touch position            
+        this.graphicsContainer?.addChild(this.clickOrigin)
+        this.graphicsContainer?.addChild(this.releaseOrigin)
 
-            if (this.eugine.uiCanvas.pointerOver) {
+        AppSingleton.onPointerDown.add((event: any) => {
+            if (this.loggie.overlay.pointerOver) {
                 return;
             }
 
             this.pointerDown = true;
             this.pointerUp = false;
 
-            this.pointerDownPosition.x = pointer.x / this.eugine.uiCanvas.targetScale;
-            this.pointerDownPosition.y = pointer.y / this.eugine.uiCanvas.targetScale;
+            const toLocal = this.graphicsContainer?.view.toLocal(event)
+            if(toLocal){
+                this.pointerDownPosition.x = toLocal.x;
+                this.pointerDownPosition.y = toLocal.y;
+            }
             this.distanceFromOrigin = 0;
             this.onPointerDown.dispatch();
         });
 
-        this.scene.input.on('pointerup', (pointer: any) => {
-            // Log the initial touch position
+        AppSingleton.onPointerUp.add((event: any) => {
             this.pointerDown = false;
             this.pointerUp = true;
 
             this.pointerMoveDirectionFromOrigin = new PIXI.Point();
-
-            this.distanceFromOrigin = Phaser.Math.Distance.BetweenPoints(this.pointerDownPosition, this.pointerLatestPosition);
+            this.distanceFromOrigin = MathUtils.distance(this.pointerDownPosition.x, this.pointerDownPosition.y, this.pointerLatestPosition.x, this.pointerLatestPosition.y);
             this.onPointerUp.dispatch();
         });
 
-        this.scene.input.on('pointermove', (pointer: any) => {
-            // Add a pointermove event to track finger movement  
-
-            this.pointerLatestPosition.x = pointer.x / this.eugine.uiCanvas.targetScale;
-            this.pointerLatestPosition.y = pointer.y / this.eugine.uiCanvas.targetScale;
-
-            this.pointerMoveDirectionFromOrigin = this.pointerLatestPosition.clone().subtract(this.pointerDownPosition).normalize();
-            this.distanceFromOrigin = Phaser.Math.Distance.BetweenPoints(this.pointerDownPosition, this.pointerLatestPosition);
-
-            this.directionAngle = this.pointerMoveDirectionFromOrigin.angle();
-        });
 
         this.pointerDown = false;
         this.pointerUp = true;
     }
-    get normalDistance() {
+    get normalDistance(): number {
         return this.stickDistance / this.stickMaxDistance;
+    }
+    updatePointers() {
+
+
+        const toLocal = this.graphicsContainer?.view.toLocal(AppSingleton.globalPointer)
+        if(toLocal){
+            this.pointerLatestPosition.x = toLocal.x;
+            this.pointerLatestPosition.y = toLocal.y;
+        }
+
+        this.pointerMoveDirectionFromOrigin.x = this.pointerLatestPosition.x - this.pointerDownPosition.x
+        this.pointerMoveDirectionFromOrigin.y = this.pointerLatestPosition.y - this.pointerDownPosition.y
+        this.distanceFromOrigin = MathUtils.distance(this.pointerDownPosition.x, this.pointerDownPosition.y, this.pointerLatestPosition.x, this.pointerLatestPosition.y);
+
+        MathUtils.normalizePoint(this.pointerMoveDirectionFromOrigin)
+        
+        this.directionAngle = Math.atan2(this.pointerMoveDirectionFromOrigin.y, this.pointerMoveDirectionFromOrigin.x)
     }
     getNormal(): number {
         return this.normalDistance
@@ -103,30 +106,32 @@ export default class AnalogInput extends GameObject implements InputDirections {
     getDirections(): PIXI.Point {
         return this.pointerMoveDirectionFromOrigin;
     }
-    lateUpdate(delta: number, time: number): void {
-        super.lateUpdate(delta, time);
-        if (this.pointerDown) {
+    update(delta: number, time: number): void {
+        super.update(delta, time);
+        this.updatePointers();
 
+        if (this.pointerDown) {
+            if (this.graphicsContainer) {
+                this.graphicsContainer.view.visible = true;
+            }
             if (this.clickOrigin) {
 
                 this.clickOrigin.x = this.pointerDownPosition.x;
-                this.clickOrigin.z = this.pointerDownPosition.y;
-                this.clickOrigin.view.setVisible(true);
+                this.clickOrigin.y = this.pointerDownPosition.y;
             }
 
             this.stickDistance = this.stickMaxDistance > this.distanceFromOrigin ? this.distanceFromOrigin : this.stickMaxDistance;
 
             if (this.releaseOrigin) {
                 this.releaseOrigin.x = (this.pointerDownPosition.x + Math.cos(this.directionAngle) * this.stickDistance);
-                this.releaseOrigin.z = (this.pointerDownPosition.y + Math.sin(this.directionAngle) * this.stickDistance);
-                this.releaseOrigin.view.setVisible(true);
+                this.releaseOrigin.y = (this.pointerDownPosition.y + Math.sin(this.directionAngle) * this.stickDistance);
             } else {
 
             }
-
         } else {
-            this.clickOrigin?.view.setVisible(false);
-            this.releaseOrigin?.view.setVisible(false);
+            if (this.graphicsContainer) {
+                this.graphicsContainer.view.visible = false;
+            }
         }
     }
 }

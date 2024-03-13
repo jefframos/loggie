@@ -1,3 +1,5 @@
+import * as PIXI from 'pixi.js';
+
 export default class MathUtils {
 
     static lerpAngle(startAngle: number, endAngle: number, t: number): number {
@@ -38,4 +40,16 @@ export default class MathUtils {
 
         return distance;
     }
+    static normalizePoint(point: PIXI.Point) {
+        // Calculate the magnitude of the vector
+        const magnitude = Math.sqrt(point.x * point.x + point.y * point.y);
+
+        // Check if the magnitude is zero to avoid division by zero
+        if (magnitude !== 0) {
+            // Normalize the point by dividing each component by the magnitude
+            point.x = point.x / magnitude
+            point.y = point.y / magnitude
+        };
+    }
+
 }

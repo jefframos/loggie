@@ -5,7 +5,7 @@ export default class ViewUtils {
         if (!heightTarget) {
             heightTarget = widthTarget;
         }
-        return Math.min(widthTarget / element.width * element.scale.x, heightTarget / element.height* element.scale.y);
+        return Math.min(Math.abs(widthTarget / element.width * element.scale.x), Math.abs(heightTarget / element.height* element.scale.y));
     }
 
     //get converted scaled based on the percentage of the width and height on the screen

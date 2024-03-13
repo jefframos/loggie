@@ -7,6 +7,7 @@ import { OrientationType } from '../screen/OrientationType';
 import GuiDebugger from '../debug/GuiDebugger';
 import GameView from '../view/GameView';
 import Layer from '../Layer';
+import AppSingleton from 'loggie/AppSingleton';
 export default class Overlay {
 
     static DEFAULT_RESOLUTION = {
@@ -33,7 +34,7 @@ export default class Overlay {
     public aspectRatio: number = 1;
     private latestAspectRatio = -1;
 
-    private forcedOrientation: OrientationType = OrientationType.Both;
+    private forcedOrientation: OrientationType = OrientationType.ForcePortrait;
 
     public onOrientationChange: Signal = new Signal();
 
@@ -107,17 +108,18 @@ export default class Overlay {
         canvasHeight: 0
     }
 
-    private container: PIXI.Container;
+    public container: PIXI.Container;
     constructor(container: PIXI.Container) {
 
         this.container = container;
         GuiDebugger.instance.listenFolder('overlay', this.debug)
     }
     update(delta: number, unscaledTime: number) {
-        this.pointerOver = false;
-
-
         // this.interactiveList = this.findInteractiveElements(this);
+
+        this.pointerOver = this.container.children.some(child => {
+            return child.interactive && child.getBounds().contains(AppSingleton.globalPointer.x, AppSingleton.globalPointer.y);
+        });
 
         // this.interactiveList.forEach((child: PIXI.Container) => {
         //     if (!this.isContainerVisibleConsideringParents(child)) return;

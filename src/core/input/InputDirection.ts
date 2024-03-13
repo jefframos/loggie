@@ -1,5 +1,7 @@
-interface InputDirections {
-    getDirections(): Phaser.Math.Vector2;
+import * as PIXI from 'pixi.js';
+
+export interface InputDirections {
+    getDirections(): PIXI.Point;
     getNormal():number;
     getPressed():boolean;
 }
