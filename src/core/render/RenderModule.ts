@@ -13,24 +13,9 @@ import { RenderLayers } from "./RenderLayers";
 import ScreenInfo from "../screen/ScreenInfo";
 
 export default class RenderModule extends GameObject {
-    // static RenderLayers = {
-    //     BaseB: '_p__u_baseb',
-    //     Base: '_u_base',
-    //     Debug: '_u_debug',
-    //     Shadow: '_u__p_shadow',
-    //     Default: '_n_default',
-    //     Floor: '_p_floor',
-    //     Building: 'building',
-    //     BackLayer: '_u_back',
-    //     Gameplay: '_u_gameplay',
-    //     Light: '_u_light',
-    //     FrontLayer: '_u_front',
-    //     Particles: 'particles',
-    //     UILayer: '_g_UI',
-    //     UILayerOverlay: '_u_UIOverlay'
-    // }
+
     public container: PIXI.Container;
-    protected uiOverlay: Overlay;
+    protected uiOverlay!: Overlay;
     protected views: Array<GameView>;
 
     public onNewRenderEntityAdded: signals.Signal;
@@ -90,21 +75,14 @@ export default class RenderModule extends GameObject {
         this.renderStats = {
             totalRenderEntities: 0
         }
-        //window.gameplayFolder.add(this.renderStats, 'totalRenderEntities').listen();
 
         GuiDebugger.instance.listenFolder('Render', this.renderStats)
 
         this.onNewRenderEntityAdded = new signals.Signal();
         this.onNewRenderEntityLateAdded = new signals.Signal();
-
         this.lateAdded = []
-
-
-        //this.layers.get(RenderLayers.Shadow)?.container.tint = 0
-        //this.layers.get(RenderLayers.Shadow)?.container.alpha = 0.1
     }
     setCameraPivots(pivot:PIXI.Point){
-        //this.container.pivot = pivot
         this.layersArray.forEach(element => {
             if(element.scrollable){
                 element.container.pivot.x = pivot.x
@@ -136,9 +114,7 @@ export default class RenderModule extends GameObject {
             if (gameView) {
                 this.addGameView(gameView)
             }
-
         });
-
     }
     addGameView(gameView: GameView) {
         gameView.gameObject.gameObjectDestroyed.add(this.elementDestroyed.bind(this))
@@ -157,25 +133,19 @@ export default class RenderModule extends GameObject {
         if (gameView) {
             this.removeView(gameView)
         }
-
     }
     removeView(gameView: GameView) {
         if (gameView.layer == RenderLayers.UILayerOverlay) {
             this.uiOverlay.removeChild(gameView.view)
 
         } else if (gameView) {
-            console.log(gameView)
-            console.log('elementDestroyed', gameView)
             this.layers.get(gameView.layer)?.removeGameView(gameView)
-
         }
 
     }
     swapLayer(entity: GameView, layer: string) {
         this.layers.get(entity.layer)?.removeGameView(entity)
         this.layers.get(layer)?.addGameView(entity)
-
-        console.log(entity.layer, ' to' , layer)
     }
     onRender() {
         this.layersArray.forEach(element => {

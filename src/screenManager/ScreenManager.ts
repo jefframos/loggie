@@ -34,7 +34,6 @@ export default class ScreenManager extends PIXI.Container {
 		this.change(this.prevScreen);
 	}
 	change(screenLabel:string, param:any = {}) {
-		console.log('--', param)
 		if(this.screenList.has(screenLabel)){
 			const next = this.screenList.get(screenLabel);
 			if (this.currentScreen && next) {
@@ -62,7 +61,6 @@ export default class ScreenManager extends PIXI.Container {
 			this.prevScreen = this.currentScreen.label;
 		}
 
-		console.log('ADD',this.screenList)	
 		if(this.screenList.has(screenLabel)){
 			const next = this.screenList.get(screenLabel);
 			if(next){
