@@ -62,8 +62,8 @@ export default class RigidBody extends BaseComponent {
         return this.body
     }
     buildCircle(radius: number, isStatic = false) {
-        this.body = Matter.Bodies.circle(0, 0, radius, { isStatic: false, restitution: 1 });
-        this.body.circleRadius = radius
+        const scale = radius / (this.body.circleRadius || radius);
+        Matter.Body.scale(this.body, scale, scale);
         this.body.gameObject = this;
         this.loggie.physics.addAgent(this)
         this.body.position.x = this.gameObject.x;
@@ -84,7 +84,7 @@ export default class RigidBody extends BaseComponent {
     update(delta: number, unscaledTime: number) {
         super.update(delta, unscaledTime);
 
-        this.positionDiff.x = this.gameObject.transform.position.x - this.latestPosition.x 
+        this.positionDiff.x = this.gameObject.transform.position.x - this.latestPosition.x
         this.positionDiff.z = this.gameObject.transform.position.z - this.latestPosition.z
 
         this.physics.update();
@@ -114,7 +114,7 @@ export default class RigidBody extends BaseComponent {
         this.applyVelocity(this.physics.force2D);
         this.physics.angle = this.gameObject.transform.angle
 
-        
+
     }
     public lateUpdate(delta: number, unscaledDelta: number): void {
         super.lateUpdate(delta, unscaledDelta)

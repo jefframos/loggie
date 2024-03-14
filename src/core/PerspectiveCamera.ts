@@ -34,7 +34,7 @@ export default class PerspectiveCamera extends Camera {
         super.update(delta, unscaledTime);
 
 
-        this.targetZoom = this.cam.z
+        //this.targetZoom = this.cam.z
 
         if (this.followPoint) {
             // if (Utils.distance(this.renderModule.container.pivot.x, this.renderModule.container.pivot.y, this.followPoint.x, this.followPoint.z) > 30) {

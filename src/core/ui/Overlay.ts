@@ -10,21 +10,12 @@ import Layer from '../Layer';
 import AppSingleton from 'loggie/AppSingleton';
 export default class Overlay {
 
-    static DEFAULT_RESOLUTION = {
-        width: 1080,
-        height: 1920,
-        scale: 1
-    }
-    static DEFAULT_MOBILE_RESOLUTION = {
-        width: 1080,
-        height: 1920,
-        scale: 1
-    }
 
     public topLeft: PIXI.Point = new PIXI.Point();
     public topRight: PIXI.Point = new PIXI.Point();
     public bottomLeft: PIXI.Point = new PIXI.Point();
     public bottomRight: PIXI.Point = new PIXI.Point();
+    public center: PIXI.Point = new PIXI.Point();
     public left: number = 0;
     public right: number = 0;
     public up: number = 0;
@@ -40,38 +31,38 @@ export default class Overlay {
 
     get platformScale(): number {
         if (this.isMobile) {
-            return Overlay.DEFAULT_MOBILE_RESOLUTION.scale
+            return AppSingleton.DEFAULT_MOBILE_RESOLUTION.scale
         } else {
-            return Overlay.DEFAULT_RESOLUTION.scale
+            return AppSingleton.DEFAULT_RESOLUTION.scale
         }
     }
 
     get minWidth(): number {
         if (this.isMobile) {
             if (this.isPortrait) {
-                return Overlay.DEFAULT_MOBILE_RESOLUTION.width
+                return AppSingleton.DEFAULT_MOBILE_RESOLUTION.width
             } else {
-                return Overlay.DEFAULT_MOBILE_RESOLUTION.height
+                return AppSingleton.DEFAULT_MOBILE_RESOLUTION.height
             }
         }
         if (this.isPortrait) {
-            return Overlay.DEFAULT_RESOLUTION.width
+            return AppSingleton.DEFAULT_RESOLUTION.width
         } else {
-            return Overlay.DEFAULT_RESOLUTION.height
+            return AppSingleton.DEFAULT_RESOLUTION.height
         }
     }
     get minHeight(): number {
         if (this.isMobile) {
             if (this.isPortrait) {
-                return Overlay.DEFAULT_MOBILE_RESOLUTION.height
+                return AppSingleton.DEFAULT_MOBILE_RESOLUTION.height
             } else {
-                return Overlay.DEFAULT_MOBILE_RESOLUTION.width
+                return AppSingleton.DEFAULT_MOBILE_RESOLUTION.width
             }
         }
         if (this.isPortrait) {
-            return Overlay.DEFAULT_RESOLUTION.height
+            return AppSingleton.DEFAULT_RESOLUTION.height
         } else {
-            return Overlay.DEFAULT_RESOLUTION.width
+            return AppSingleton.DEFAULT_RESOLUTION.width
         }
     }
     get isPortrait() {
@@ -121,43 +112,15 @@ export default class Overlay {
             return child.interactive && child.getBounds().contains(AppSingleton.globalPointer.x, AppSingleton.globalPointer.y);
         });
 
-        // this.interactiveList.forEach((child: PIXI.Container) => {
-        //     if (!this.isContainerVisibleConsideringParents(child)) return;
-        //     const bounds = child.getBounds();
-        //     if (bounds.contains(this.scene.input.x, this.scene.input.y)) {
-        //         this.pointerOver = true;
-        //         return;
-        //     }
-        // });
         this.handleScaling();
-        this.topLeft.x = 0;
-        this.topLeft.y = 0;
 
 
-        //if is not mobile, the scroll bar must be removed
-
-        let width = window.innerWidth // this.scene.game.canvas.width
-        let height = window.innerHeight // window.innerHeight
-        
-        this.bottomRight.x = width / this.targetScale;
-        this.bottomRight.y = height / this.targetScale;
-
-        this.bottomLeft.x = 0;
-        this.bottomLeft.y = height / this.targetScale;
-
-        this.topRight.x = width / this.targetScale;
-        this.topRight.y = 0;
-
-        this.right = width / this.targetScale;
-        this.down = height / this.targetScale;
+        this.getCornerPositions();
 
         this.container.width = this.canvasWidth
         this.container.height = this.canvasHeight
 
         this.container.scale.set(this.targetScale, this.targetScale)
-
-        //console.log(this.targetScale)
-
 
         this.aspectRatio = this.canvasWidth / this.canvasHeight;
 
@@ -171,6 +134,22 @@ export default class Overlay {
         this.debug.targetScale = this.targetScale.toFixed(2)
         this.debug.canvasWidth = this.canvasWidth
         this.debug.canvasHeight = this.canvasHeight
+
+
+    }
+    getCornerPositions() {
+        const screenBounds = AppSingleton.app.screen;
+        this.topLeft = this.container.toLocal(new PIXI.Point(screenBounds.x, screenBounds.y));
+        this.topRight = this.container.toLocal(new PIXI.Point(screenBounds.x + screenBounds.width, screenBounds.y));
+        this.bottomLeft = this.container.toLocal(new PIXI.Point(screenBounds.x, screenBounds.y + screenBounds.height));
+        this.bottomRight = this.container.toLocal(new PIXI.Point(screenBounds.x + screenBounds.width, screenBounds.y + screenBounds.height));
+
+        this.right = this.bottomRight.x
+        this.down = this.bottomRight.y;
+
+        this.center.x = this.right / 2
+        this.center.y = this.down / 2
+
     }
     orientationChange() {
         this.latestAspectRatio = -1
@@ -188,15 +167,17 @@ export default class Overlay {
 
     handleScaling() {
 
-        if (this.canvasWidth < this.minWidth || this.canvasHeight < this.minHeight) {
-            const minWidthScale = this.canvasWidth / this.minWidth;
-            const minHeightScale = this.canvasHeight / this.minHeight;
-            const minScale = Math.min(minWidthScale, minHeightScale);
-            this.targetScale = minScale * this.platformScale;
+        const screenBounds = AppSingleton.app.screen;
 
+        const containerAspect = screenBounds.width / screenBounds.height;
+        const targetAspect = this.isPortrait ? AppSingleton.DEFAULT_RESOLUTION.height / AppSingleton.DEFAULT_RESOLUTION.width : AppSingleton.DEFAULT_RESOLUTION.width / AppSingleton.DEFAULT_RESOLUTION.height;
+
+        if (containerAspect > targetAspect) {
+            this.targetScale = AppSingleton.DEFAULT_RESOLUTION.width / screenBounds.width;
         } else {
-            this.targetScale = 1 * this.platformScale;
+            this.targetScale = AppSingleton.DEFAULT_RESOLUTION.height / screenBounds.height;
         }
+
     }
 
     isContainerVisibleConsideringParents(container: PIXI.Container): boolean {
@@ -221,7 +202,7 @@ export default class Overlay {
     }
 
     worldToUiPosition(x: number, y: number): PIXI.Point {
-        return this.toLocal({ x, y })
+        return this.container.toLocal({ x, y })
     }
 
     addChild(child: PIXI.DisplayObject) {

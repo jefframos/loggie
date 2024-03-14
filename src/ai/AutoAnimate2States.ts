@@ -17,7 +17,10 @@ export default class AutoAnimate2States extends BaseComponent {
         super.update(delta, unscaledTime);
 
         if (this.animator && this.rigidBody) {
-            if(this.rigidBody.physics.magnitude > 0){
+            if(this.rigidBody.physics.velocity.normalizedLength()){
+             //console.log(this.rigidBody.physics.velocity.normalize())   
+            }
+            if(this.rigidBody.physics.velocity.normalizedLength() > 0.5){
                 this.animator.play('walk')
             }else{
                 this.animator.play('idle')

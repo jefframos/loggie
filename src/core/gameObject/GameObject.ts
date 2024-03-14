@@ -60,6 +60,17 @@ export default class GameObject extends BaseComponent {
         }
         return elementFound;
     }
+    findComponents(type: any) {
+        let elementFound = []
+
+        for (let index = 0; index < this.components.length; index++) {
+            const element = this.components[index];
+            if (element instanceof type) {
+                elementFound.push(element);                
+            }
+        }
+        return elementFound;
+    }
     addComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
         let element = Pool.instance.getElement(constructor)
         this.components.push(element);

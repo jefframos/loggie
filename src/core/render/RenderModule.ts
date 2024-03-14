@@ -35,14 +35,14 @@ export default class RenderModule extends GameObject {
         super();
 
         this.container = container;
-       
+
         this.views = [];
 
         this.layers = new Map<string, Layer>();
         this.layersArray = [];
 
         const layerEnum = Object.values(RenderLayers);
-        
+
         for (const key in layerEnum) {
             const element = layerEnum[key];
             if (element.indexOf('_g_') >= 0) {
@@ -65,8 +65,13 @@ export default class RenderModule extends GameObject {
             this.layersArray.push(layer)
         }
 
+        const overlayContainer = new PIXI.Container();
+        this.container.parent.addChild(overlayContainer)
+
         const overlayLayer = this.layers.get(RenderLayers.UILayerOverlay)
-        if(overlayLayer){
+        if (overlayLayer) {
+            overlayLayer.container.parent.removeChild(overlayLayer.container)
+            overlayContainer.addChild(overlayLayer.container)
             overlayLayer.scrollable = false;
             this.uiOverlay = new Overlay(overlayLayer.container);
 
@@ -82,9 +87,9 @@ export default class RenderModule extends GameObject {
         this.onNewRenderEntityLateAdded = new signals.Signal();
         this.lateAdded = []
     }
-    setCameraPivots(pivot:PIXI.Point){
+    setCameraPivots(pivot: PIXI.Point) {
         this.layersArray.forEach(element => {
-            if(element.scrollable){
+            if (element.scrollable) {
                 element.container.pivot.x = pivot.x
                 element.container.pivot.y = pivot.y
             }
@@ -99,9 +104,8 @@ export default class RenderModule extends GameObject {
         this.uiOverlay.update(delta, unscaledTime);
         this.container.x = ScreenInfo.gameWidth / 2;
         this.container.y = ScreenInfo.gameHeight / 2;
+        this.uiOverlay.container.scale.set(1 + (1 - this.container.scale.x))
 
-        this.uiOverlay.container.x = -this.container.x
-        this.uiOverlay.container.y = -this.container.y
     }
     newComponentAdded(entity: BaseComponent) {
         if (entity instanceof GameView) {
@@ -129,10 +133,12 @@ export default class RenderModule extends GameObject {
         this.lateAdded.push(gameView);
     }
     elementDestroyed(element: GameObject) {
-        const gameView = element.findComponent(GameView) as GameView
-        if (gameView) {
-            this.removeView(gameView)
-        }
+        const components = element.findComponents(GameView)
+        components.forEach(gameView => {
+            if(gameView instanceof GameView){
+                this.removeView(gameView)
+            }
+        });
     }
     removeView(gameView: GameView) {
         if (gameView.layer == RenderLayers.UILayerOverlay) {
