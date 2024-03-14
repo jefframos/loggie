@@ -140,15 +140,16 @@ export default class PhysicsModule extends GameObject {
             this.nonStaticList.push(agent)
         }
     }
-    update(delta:number) {
+    update(delta: number, unscaledTime: number) {
         delta *= Loggie.PhysicsTimeScale;
-        super.update(delta)
+        super.update(delta, unscaledTime);
+
 
         if (this.physicsEngine && delta) {
             Matter.Engine.update(this.physicsEngine, delta);
         }
 
-        
+
         this.physicsStats.totalPhysicsEntities = this.physicsEngine.detector.bodies.length
         this.physicsStats.agents = this.collisionList.length
     }
