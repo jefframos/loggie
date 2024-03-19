@@ -1,4 +1,7 @@
 export default class Vector3 {
+    static get ZERO(){
+        return new Vector3();
+    }
     public x:number;
     public y:number;
     public z:number;

@@ -46,9 +46,8 @@ export default class RigidBody extends BaseComponent {
         this.body.gameObject = this;
         this.gameObject.x = this.body.position.x;
         this.gameObject.z = this.body.position.y;
-
+        this.body.isStatic = isStatic;
         this.loggie.physics.addAgent(this)
-
         return this.body
     }
     buildVertices(x: number, y: number, vertices: Matter.Vector[][], isStatic: boolean = false) {
@@ -56,19 +55,24 @@ export default class RigidBody extends BaseComponent {
         this.body.gameObject = this;
         this.gameObject.x = this.body.position.x;
         this.gameObject.z = this.body.position.y;
-
-        this.loggie.physics.addAgent(this)
-
+        this.body.isStatic = isStatic;
+        this.loggie.physics.addAgent(this)        
         return this.body
     }
     buildCircle(radius: number, isStatic = false) {
         const scale = radius / (this.body.circleRadius || radius);
         Matter.Body.scale(this.body, scale, scale);
         this.body.gameObject = this;
-        this.loggie.physics.addAgent(this)
         this.body.position.x = this.gameObject.x;
         this.body.position.y = this.gameObject.z;
+        this.body.isStatic = isStatic;
+        this.loggie.physics.addAgent(this)
         return this.body
+    }
+    scaleToRadius(radius: number){
+        const scale = radius / (this.body.circleRadius || radius);
+        Matter.Body.scale(this.body, scale, scale);
+        this.body.circleRadius = radius;
     }
     applyForce(force: Vector3) {
         if (!this.body) return;

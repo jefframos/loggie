@@ -8,13 +8,32 @@ export default class GuiDebugger {
         }
         return GuiDebugger._instance;
     }
-    private gui: dat.GUI;
+    private _disabled: boolean = false;
+    public set disabled(value: boolean) {
+        this._disabled = value;
+        if (!value) {
+            if (this.gui) {
+                this.gui.destroy();
+            }
+        }
+    }
+    private gui!: dat.GUI;
     constructor() {
 
+        if (this.disabled) {
+            return
+        }
         this.gui = new dat.GUI();
     }
+
     public listenFolder(folderName: string, parentObject: any, forceOpen: boolean = true) {
 
+        if (this.disabled) {
+            return
+        }
+        if (!this.gui) {
+            this.gui = new dat.GUI();
+        }
         const folder = this.gui.addFolder(folderName);
 
         for (const key in parentObject) {

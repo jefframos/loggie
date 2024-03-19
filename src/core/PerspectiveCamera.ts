@@ -92,7 +92,7 @@ export default class PerspectiveCamera extends Camera {
     }
 
     //TODO: the perspective is disabled for now
-    transformView(gameView) {
+    transformView(gameView:GameView) {
         //console.log(gameView.gameObject)
         // let camM = [1, 0, 0, 0,
         //     0, 1, 0, 0,

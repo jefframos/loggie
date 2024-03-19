@@ -88,12 +88,13 @@ export default class RenderModule extends GameObject {
         this.lateAdded = []
     }
     setCameraPivots(pivot: PIXI.Point) {
-        this.layersArray.forEach(element => {
+        for (let index = 0; index < this.layersArray.length; index++) {
+            const element = this.layersArray[index];
             if (element.scrollable) {
                 element.container.pivot.x = pivot.x
                 element.container.pivot.y = pivot.y
-            }
-        });
+            }            
+        }
     }
     start() {
         this.loggie.entityAdded.add(this.newEntityAdded.bind(this))

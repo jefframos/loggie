@@ -1,10 +1,9 @@
-import Eugine from "eugine/core/Eugine";
-import Component from "eugine/core/components/Component";
-import GameObject from "eugine/core/gameObject/GameObject";
-import PhysicsGameObject from "eugine/core/physics/PhysicsGameObject";
-import MathUtils from "eugine/core/utils/MathUtils";
+import BaseComponent from "loggie/core/gameObject/BaseComponent";
+import Vector3 from "loggie/core/gameObject/Vector3";
+import MathUtils from "loggie/utils/MathUtils";
 
-export default class Wander extends Component {
+
+export default class Wander extends BaseComponent {
 
     private targetSpeed: number = 0;
     private currentSpeed: number = 0;
@@ -16,24 +15,24 @@ export default class Wander extends Component {
     public waitTime: number = 2;
     private currentWaitTime: number = 2;
 
-    private originPoint: Phaser.Math.Vector3 = new Phaser.Math.Vector3();
+    private originPoint: Vector3 = new Vector3();
     private direction: number = 0;
 
-    constructor(scene: Phaser.Scene, eugine: Eugine) {
-        super(scene, eugine);
-    }
-    setOriginPoint(point: Phaser.Math.Vector3) {
+
+    setOriginPoint(point: Vector3) {
         this.originPoint = point;
     }
     updateBehaviour(delta: number, time: number) {
 
-        const parent = this.gameObject as unknown as PhysicsGameObject;
+        if (!this.gameObject.rigidBody) {
+            return;
+        }
         this.currentSpeed = MathUtils.lerp(this.currentSpeed, this.targetSpeed, 0.08)
+        this.gameObject.rigidBody.velocityX = Math.cos(this.direction) * this.currentSpeed;
+        this.gameObject.rigidBody.velocityY = Math.sin(this.direction) * this.currentSpeed;
 
         if (this.currentWanderTime >= 0) {
             this.targetSpeed = this.maxSpeed;
-            parent.velocityX = Math.cos(this.direction) * this.currentSpeed;
-            parent.velocityY = Math.sin(this.direction) * this.currentSpeed;
             this.currentWanderTime -= delta;
             this.currentWaitTime = this.waitTime;
         } else {
@@ -41,8 +40,8 @@ export default class Wander extends Component {
                 this.currentWaitTime -= delta;
                 this.targetSpeed = 0;
             } else {
-                if (parent.transform.position.distance(this.originPoint) > 100) {
-                    this.direction = Phaser.Math.Angle.Between(parent.physicsEntity.y, parent.physicsEntity.x, this.originPoint.y, this.originPoint.x)
+                if (Vector3.distance(this.gameObject.transform.position, this.originPoint) > 100) {
+                    this.direction = Vector3.atan2XZ(this.originPoint, this.gameObject.transform.position)
                 } else {
                     this.direction = Math.random() * Math.PI * 2;
                 }
@@ -52,10 +51,16 @@ export default class Wander extends Component {
     }
 
     reset() {
-        const parent = this.gameObject as unknown as PhysicsGameObject;
-        parent.velocityX = 0;
-        parent.velocityY = 0;
-        this.currentWanderTime = -1;
-        this.currentWaitTime = this.waitTime / 2 + Math.random() * this.waitTime / 2;
+        if (!this.gameObject.rigidBody) {
+            return;
+        }
+        this.gameObject.rigidBody.velocityX = 0;
+        this.gameObject.rigidBody.velocityY = 0;
+        if (Math.random() > 0.5) {
+            this.currentWanderTime = this.wanderTime / 2 + Math.random() * this.wanderTime / 2;
+        } else {
+            this.currentWanderTime = -1;
+            this.currentWaitTime = this.waitTime / 2 + Math.random() * this.waitTime / 2;
+        }
     }
 }
