@@ -28,8 +28,8 @@ export default class Wander extends BaseComponent {
             return;
         }
         this.currentSpeed = MathUtils.lerp(this.currentSpeed, this.targetSpeed, 0.08)
-        this.gameObject.rigidBody.velocityX = Math.cos(this.direction) * this.currentSpeed;
-        this.gameObject.rigidBody.velocityY = Math.sin(this.direction) * this.currentSpeed;
+        this.gameObject.rigidBody.targetVelocity.x = Math.cos(this.direction) * this.currentSpeed;
+        this.gameObject.rigidBody.targetVelocity.z = Math.sin(this.direction) * this.currentSpeed;
 
         if (this.currentWanderTime >= 0) {
             this.targetSpeed = this.maxSpeed;

@@ -31,12 +31,12 @@ export default class InputControlledPhysicObject extends BaseComponent {
         this.currentSpeed = MathUtils.lerp(this.currentSpeed, this.targetSpeed, 0.08)
         if (this.movementService.pointerDown) {
             const dist = Math.pow(this.movementService.inputNormal, 0.5)
-            this.gameObject.rigidBody.velocityX = this.movementService.direction.x * this.currentSpeed * dist
-            this.gameObject.rigidBody.velocityY = this.movementService.direction.y * this.currentSpeed * dist
+            this.gameObject.rigidBody.targetVelocity.x = Math.floor(this.movementService.direction.x * this.currentSpeed * dist)
+            this.gameObject.rigidBody.targetVelocity.z =  Math.floor(this.movementService.direction.y * this.currentSpeed * dist)
             this.targetSpeed = this.maxSpeed;
         } else {
-            this.gameObject.rigidBody.velocityX = 0
-            this.gameObject.rigidBody.velocityY = 0
+            this.gameObject.rigidBody.targetVelocity.x = 0
+            this.gameObject.rigidBody.targetVelocity.z = 0
             this.targetSpeed = 0;
         }
     }

@@ -11,6 +11,7 @@ export default class RigidBody extends BaseComponent {
     public body!: Body;
     public autoSetAngle: boolean = true;
     public appliedForce: Vector3 = new Vector3()
+    public targetVelocity: Vector3 = new Vector3()
     public friction: number = 0.1;
     public latestAngle: number = 0;
     public latestPosition: Vector3 = new Vector3();
@@ -88,6 +89,14 @@ export default class RigidBody extends BaseComponent {
     update(delta: number, unscaledTime: number) {
         super.update(delta, unscaledTime);
 
+
+        if(this.targetVelocity.x !== undefined){
+            this.velocityX = this.targetVelocity.x
+        }
+        if(this.targetVelocity.z !== undefined){
+            this.velocityY = this.targetVelocity.z
+        }
+
         this.positionDiff.x = this.gameObject.transform.position.x - this.latestPosition.x
         this.positionDiff.z = this.gameObject.transform.position.z - this.latestPosition.z
 
@@ -118,7 +127,7 @@ export default class RigidBody extends BaseComponent {
         this.applyVelocity(this.physics.force2D);
         this.physics.angle = this.gameObject.transform.angle
 
-
+       
     }
     public lateUpdate(delta: number, unscaledDelta: number): void {
         super.lateUpdate(delta, unscaledDelta)

@@ -1,4 +1,4 @@
-import { CardinalDirection } from "./CardinalDirection";
+import { CardinalDirection } from "../utils/Cardinals";
 import GameObject from "./GameObject";
 import Vector3 from "./Vector3";
 
@@ -61,19 +61,19 @@ export default class Transform {
     
         // Determine the direction based on the this._angle
         if (this._angle >= Math.PI / 8 && this._angle < 3 * Math.PI / 8) {
-            return CardinalDirection.Southeast;
+            return CardinalDirection.SouthEast;
         } else if (this._angle >= 3 * Math.PI / 8 && this._angle < 5 * Math.PI / 8) {
             return CardinalDirection.South;
         } else if (this._angle >= 5 * Math.PI / 8 && this._angle < 7 * Math.PI / 8) {
-            return CardinalDirection.Southwest;
+            return CardinalDirection.SouthWest;
         } else if (this._angle >= 7 * Math.PI / 8 && this._angle < 9 * Math.PI / 8) {
             return CardinalDirection.West;
         } else if (this._angle >= 9 * Math.PI / 8 && this._angle < 11 * Math.PI / 8) {
-            return CardinalDirection.Northwest;
+            return CardinalDirection.NorthWest;
         } else if (this._angle >= 11 * Math.PI / 8 && this._angle < 13 * Math.PI / 8) {
             return CardinalDirection.North;
         } else if (this._angle >= 13 * Math.PI / 8 && this._angle < 15 * Math.PI / 8) {
-            return CardinalDirection.Northeast;
+            return CardinalDirection.NorthEast;
         } else {
             return CardinalDirection.East;
         }

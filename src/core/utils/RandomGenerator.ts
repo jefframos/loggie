@@ -1,10 +1,12 @@
 export default class RandomGenerator {
-    constructor(seed) {
+    private seedBase:number = 0;
+    private seed:number = 0;
+    constructor(seed:number) {
         this.seedBase = seed;
         this.seed = seed;
         //console.log(seed)
     }
-    reset(newSeed){
+    reset(newSeed:number){
         if(newSeed){
             this.seedBase = newSeed;
         }
@@ -14,7 +16,7 @@ export default class RandomGenerator {
         var x = Math.sin(this.seed++) * 10000;
         return x - Math.floor(x);
     }
-    randomOffset(value){
+    randomOffset(value:number){
         var x = Math.sin(this.seedBase + value) * 10000;
         return x - Math.floor(x);
     }
