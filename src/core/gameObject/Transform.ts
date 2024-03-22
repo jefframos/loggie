@@ -7,6 +7,7 @@ export default class Transform {
 
     public position: Vector3 = new Vector3();
     public localPosition: Vector3 = new Vector3();
+    public lookDirection: Vector3 = new Vector3();
     protected _angle: number = 0;
     public parent?: Transform;
     public gameObject: GameObject;

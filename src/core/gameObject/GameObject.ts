@@ -7,6 +7,12 @@ import Vector3 from './Vector3';
 import Loggie from '../Loggie';
 import { TagType } from '../TagType';
 import RigidBody from '../physics/RigidBody';
+import MathUtils from 'loggie/utils/MathUtils';
+
+export type EntityByDistance = {
+    distance: number,
+    entity: GameObject | null
+}
 
 export default class GameObject extends BaseComponent {
     static ObjectCounter = 0;
@@ -82,6 +88,19 @@ export default class GameObject extends BaseComponent {
         this.componentAdded.dispatch(element);
         return element;
     }
+
+    addGameObject(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
+        let element = Pool.instance.getElement(constructor)
+        this.children.push(element);
+        element.setParent(this)
+        element.enable();
+        if(autoBuild){
+            element.build(buildParams);
+        }
+        this.childAdded.dispatch(element);        
+        return element;
+    }
+
     removeComponent(component: any) {
         this.components = this.components.filter(item => item !== component)
         Pool.instance.returnElement(component)
@@ -171,6 +190,28 @@ export default class GameObject extends BaseComponent {
                 element.lateUpdate(delta, unscaledDelta);
             }
         }
+
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            const element = this.children[i];
+            if (element.shouldBeRemoved) {
+                this.children.splice(i, 1);
+                continue;
+            }
+            if (element.enabled) {
+                element.update(delta, unscaledDelta);
+            }
+        }
+
+        for (let i = this.children.length - 1; i >= 0; i--) {
+            const element = this.children[i];
+            if (element.shouldBeRemoved) {
+                this.children.splice(i, 1);
+                continue;
+            }
+            if (element.enabled) {
+                element.lateUpdate(delta, unscaledDelta);
+            }
+        }
     }
     enable() {
         this.enabled = true;
@@ -178,10 +219,18 @@ export default class GameObject extends BaseComponent {
         this.components.forEach(element => {
             element.enable();
         });
+
+        this.children.forEach(element => {
+            element.enable();
+        });
     }
     disable() {
         this.enabled = false;
         this.components.forEach(element => {
+            element.disable();
+        });
+
+        this.children.forEach(element => {
             element.disable();
         });
     }
@@ -245,5 +294,27 @@ export default class GameObject extends BaseComponent {
     }
     get enabledAndAlive() {
         return this.enabled && !this.isDestroyed
+    }
+
+    static findClosestEntity(go:GameObject, entities: Array<GameObject>): EntityByDistance {
+        let closestEntity: EntityByDistance = {
+            distance: 0,
+            entity: null
+        };
+        let closestDistance = Number.MAX_VALUE;
+
+        entities.forEach(element => {
+
+            if(element != go){
+                const distance = MathUtils.distance(element.transform.position.x, element.transform.position.z, go.transform.position.x, go.transform.position.z);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestEntity.entity = element;
+                    closestEntity.distance = distance;
+                }
+            }
+        });
+
+        return closestEntity;
     }
 }

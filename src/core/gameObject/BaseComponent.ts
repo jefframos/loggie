@@ -44,7 +44,7 @@ export default class BaseComponent {
     public lateUpdate(delta:number, unscaledDelta:number) {
 
     }
-    public build() {
+    public build(...data: any[]) {
         this.buildFrame = 0;
         this.shouldBeRemoved = false;
     }

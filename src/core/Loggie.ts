@@ -212,7 +212,7 @@ export default class Loggie {
             if (element.lateUpdate && element.enabled) {
                 element.lateUpdate(delta * Loggie.TimeScale, delta);
             }
-        });
+        });       
 
         // this.engineStats.totalGameObjects = this.gameObjects.length;
     }

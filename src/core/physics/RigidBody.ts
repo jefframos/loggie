@@ -96,21 +96,24 @@ export default class RigidBody extends BaseComponent {
         if(this.targetVelocity.z !== undefined){
             this.velocityY = this.targetVelocity.z
         }
-
+        
+        
         this.positionDiff.x = this.gameObject.transform.position.x - this.latestPosition.x
         this.positionDiff.z = this.gameObject.transform.position.z - this.latestPosition.z
-
+        
         this.physics.update();
-
+        
         this.gameObject.x = this.body.position.x;
         this.gameObject.z = this.body.position.y;
-
+        
         if (this.autoSetAngle && this.physics.magnitude > 0) {
             this.gameObject.transform.angle = Math.atan2(this.physics.velocity.z, this.physics.velocity.x);
             //this.gameObject.transform.angle = Math.atan2(this.positionDiff.z, this.positionDiff.x);
         }
         if (this.physics.magnitude > 0) {
             this.latestAngle = this.gameObject.transform.angle;
+            this.gameObject.transform.lookDirection.x = this.targetVelocity.x
+            this.gameObject.transform.lookDirection.z = this.targetVelocity.z
         }
         this.physics.unscaleVelocity.x = this.physics.velocity.x / delta;
         this.physics.unscaleVelocity.z = this.physics.velocity.z / delta;
