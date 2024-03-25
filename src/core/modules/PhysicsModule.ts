@@ -7,6 +7,8 @@ import RigidBody from "../physics/RigidBody";
 import { ICollisionEnter } from "../physics/ICollisionEnter";
 import { ICollisionEnd } from "../physics/ICollisionEnd";
 import { ICollisionStay } from "../physics/ICollisionStay";
+import GuiDebugger from "../debug/GuiDebugger";
+import { ConstraintFactory } from "matter";
 
 export default class PhysicsModule extends GameObject {
     protected physicsEngine: Matter.Engine;
@@ -15,31 +17,41 @@ export default class PhysicsModule extends GameObject {
 
     private nonStaticList: RigidBody[] = [];
     private collisionList: RigidBody[] = [];
+    private physicsStats: any;
     constructor() {
         super();
 
         this.physicsEngine = Matter.Engine.create({
             gravity: {
-                scale: 10,
+                scale: 1,
                 x: 0,
                 y: 0
             },
+            
+            enableSleeping: false
             // debug:true
         });
 
-        // const render = Matter.Render.create({
-        //     element: document.body,
-        //     engine: this.physicsEngine,
-        //     options: {
-        //         width: 1500,
-        //         height: 1500,
-        //         showAngleIndicator: true, // Show angle indicators
-        //         showCollisions: true,     // Show collision points
-        //         showVelocity: true,       // Show velocity vectors
-        //         wireframes: false,        // Set to true for wireframe rendering
-        //     },
-        // });
-        // Matter.Render.run(render);
+        if (GuiDebugger.MatterDebug) {
+
+            const render = Matter.Render.create({
+                element: document.body,
+                engine: this.physicsEngine,
+                options: {
+                    width: 1500,
+                    height: 1500,
+
+                    showAngleIndicator: true, // Show angle indicators
+                    showCollisions: true,     // Show collision points
+                    showVelocity: true,       // Show velocity vectors
+                    wireframes: true,        // Set to true for wireframe rendering
+                    pixelRatio: 0.5,
+                    //showAxes:true,
+                    showSleeping: true
+                },
+            });
+            Matter.Render.run(render);
+        }
 
         this.nonStaticList = []
         this.collisionList = []
@@ -49,6 +61,8 @@ export default class PhysicsModule extends GameObject {
             totalPhysicsEntities: 0,
             agents: 0,
         }
+
+        GuiDebugger.instance.listenFolder('Physics', this.physicsStats)
         //window.gameplayFolder.add(this.physicsStats, 'totalPhysicsEntities').listen();
 
         // Matter.Events.on(this.physicsEngine, 'collisionActive ', (event:Matter.IEvent<Matter.Engine>) => {
@@ -87,6 +101,7 @@ export default class PhysicsModule extends GameObject {
             });
         });
         Matter.Events.on(this.physicsEngine, 'collisionStart', (event: Matter.IEventCollision<Matter.Engine>) => {
+            //console.log('here')
             event.pairs.forEach((collision) => {
                 var elementPosA = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyA.id);
                 if (elementPosA >= 0) {
@@ -105,6 +120,8 @@ export default class PhysicsModule extends GameObject {
 
     }
     addPhysicBody(physicBody: RigidBody) {
+
+
         if (physicBody.gameObject.onCollisionEnter || physicBody.gameObject.onCollisionExit || physicBody.gameObject.onCollisionStay) {
             this.collisionList.push(physicBody);
         }
@@ -122,6 +139,8 @@ export default class PhysicsModule extends GameObject {
     }
 
     removeAgent(agent: RigidBody) {
+
+
         //console.log(agent)
         Matter.World.remove(this.physicsEngine.world, agent.body)
         Loggie.RemoveFromListById(this.nonStaticList, agent)
@@ -129,8 +148,10 @@ export default class PhysicsModule extends GameObject {
     }
     addAgent(agent: RigidBody) {
 
+        //console.log('addBullet')
         var elementIndex = this.collisionList.map(function (x) { return x.engineID; }).indexOf(agent.engineID);
         if (elementIndex >= 0) {
+            //console.log(this.collisionList)
             //this avoid duplicated elements
             return
         }

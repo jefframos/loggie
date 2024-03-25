@@ -10,6 +10,7 @@ export default class AppSingleton {
     static hasInteracted: boolean = false;
     static screenManager: ScreenManager;
     static ticker: PIXI.Ticker;
+    static hScale:number = 1
     static DEFAULT_RESOLUTION = {
         width: 1080,
         height: 1920,
@@ -92,7 +93,7 @@ export default class AppSingleton {
 
         // Update canvas style dimensions and scroll window up to avoid issues on mobile resize
         AppSingleton.app.renderer.view.style.width = `${windowWidth}px`;
-        AppSingleton.app.renderer.view.style.height = `${windowHeight}px`;
+        AppSingleton.app.renderer.view.style.height = `${windowHeight * AppSingleton.hScale}px`;
         window.scrollTo(0, 0);
 
         // Update renderer  and navigation screens dimensions

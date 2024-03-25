@@ -8,6 +8,7 @@ import RigidBody from './physics/RigidBody';
 import BaseComponent from './gameObject/BaseComponent';
 import RenderModule from './render/RenderModule';
 import Overlay from './ui/Overlay';
+import GuiDebugger from './debug/GuiDebugger';
 
 export default class Loggie {
 
@@ -32,12 +33,15 @@ export default class Loggie {
     private started: boolean = false;
     private callbacksWhenAdding: Map<string, Array<(gameObject: GameObject) => void>>;
 
+    private engineStats:any;
+
     public get overlay():Overlay{
         return this.render.overlay;
     }
   
     constructor() {
         Loggie._instance = this;
+
 
         this.gameObjects = []
         this.resizeableList = []
@@ -46,6 +50,11 @@ export default class Loggie {
         this.started = false;
         this.callbacksWhenAdding = new Map<string, Array<(gameObject: GameObject) => void>>();
 
+        this.engineStats = {
+            totalGameObjects:0
+        }
+
+        GuiDebugger.instance.listenFolder('Loggie', this.engineStats)
     }
 
     //helper to revome entity from list by its unique engine id
@@ -94,13 +103,33 @@ export default class Loggie {
         return go as T;
     }
 
+      //add game object using pooling system
+      addNewGameObject<T>(constructor: any, rebuild: boolean = false, ...buildParams: any | undefined[]) : T{
+        let element = new constructor();
+        if (element.removeAllSignals) {
+            element.removeAllSignals();
+        }
+
+        element.engine = this;
+        element.enable()
+        let go = this.addGameObject(element);
+        if (rebuild) {
+            element.build(buildParams);
+        }
+        return go as T;
+    }
     //add game object on the engine 
     addGameObject<T>(gameObject: GameObject) : T{
         gameObject.loggie = this;
 
+
+        gameObject.gameObjectDestroyed.removeAll()
+        gameObject.childAdded.removeAll()
+        gameObject.componentAdded.removeAll()
+
         //add these event once to avoid duplications
-        gameObject.gameObjectDestroyed.addOnce(this.wipeGameObject.bind(this))
-        gameObject.childAdded.addOnce(this.addGameObject.bind(this))
+        gameObject.gameObjectDestroyed.add(this.wipeGameObject.bind(this))
+        gameObject.childAdded.add(this.addGameObject.bind(this))
         gameObject.componentAdded.add(this.onComponentAdded.bind(this))
 
         this.gameObjects.push(gameObject);
@@ -214,7 +243,7 @@ export default class Loggie {
             }
         });       
 
-        // this.engineStats.totalGameObjects = this.gameObjects.length;
+        this.engineStats.totalGameObjects = this.gameObjects.length;
     }
     aspectChange(isPortrait: boolean) {
         this.resizeableList.forEach(element => {

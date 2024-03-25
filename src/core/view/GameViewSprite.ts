@@ -13,4 +13,8 @@ export default class  GameViewSprite extends GameView {
     addChild(element:PIXI.DisplayObject){
         this.sprite.addChild(element);
     }
+    destroy(): void {
+        super.destroy();
+        //this.sprite.texture = null
+    }
 }

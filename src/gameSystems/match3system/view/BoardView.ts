@@ -21,9 +21,9 @@ export default class BoardView extends GameObject {
  
     build(...data: any[]): void {
 
-        this.mainContainer = this.addComponent(GameViewContainer, true)
+        this.mainContainer = this.poolComponent(GameViewContainer, true)
         this.mainContainer.layer = RenderLayers.UILayerOverlay
-        this.pieceContainer = this.addComponent(GameViewContainer, true)
+        this.pieceContainer = this.poolComponent(GameViewContainer, true)
         this.pieceContainer.layer = RenderLayers.UILayerOverlay
 
         this.mainContainer.view.interactive = true;        

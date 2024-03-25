@@ -77,7 +77,7 @@ export default class GameObject extends BaseComponent {
         }
         return elementFound;
     }
-    addComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
+    poolComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
         let element = Pool.instance.getElement(constructor)
         this.components.push(element);
         element.gameObject = this;
@@ -88,7 +88,17 @@ export default class GameObject extends BaseComponent {
         this.componentAdded.dispatch(element);
         return element;
     }
-
+    addNewComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
+        let element = new constructor();
+        this.components.push(element);
+        element.gameObject = this;
+        element.enable();
+        if(autoBuild){
+            element.build(buildParams);
+        }
+        this.componentAdded.dispatch(element);
+        return element;
+    }
     addGameObject(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
         let element = Pool.instance.getElement(constructor)
         this.children.push(element);

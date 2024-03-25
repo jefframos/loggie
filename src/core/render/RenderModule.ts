@@ -142,6 +142,7 @@ export default class RenderModule extends GameObject {
         });
     }
     removeView(gameView: GameView) {
+        //console.log('removeView', gameView)
         if (gameView.layer == RenderLayers.UILayerOverlay) {
             this.uiOverlay.removeChild(gameView.view)
 

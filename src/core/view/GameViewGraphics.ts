@@ -13,4 +13,10 @@ export default class  GameViewGraphics extends GameView {
     addChild(element:PIXI.DisplayObject){
         this.graphic.addChild(element);
     }
+    destroy(): void {
+        if(this.graphic){
+            this.graphic.clear();
+        }
+        super.destroy();
+    }
 }

@@ -5,6 +5,7 @@ import PhysicsProperties from "../physics/PhysicsProperties";
 import Utils from "../utils/Utils";
 import Vector3 from "../gameObject/Vector3";
 import BaseComponent from "../gameObject/BaseComponent";
+import MathUtils from "loggie/utils/MathUtils";
 
 export default class RigidBody extends BaseComponent {
     //public physics: PhysicsProperties = new PhysicsProperties();
@@ -12,6 +13,7 @@ export default class RigidBody extends BaseComponent {
     public autoSetAngle: boolean = true;
     public appliedForce: Vector3 = new Vector3()
     public targetVelocity: Vector3 = new Vector3()
+    public inverseForce: Vector3 = new Vector3()
     public friction: number = 0.1;
     public latestAngle: number = 0;
     public latestPosition: Vector3 = new Vector3();
@@ -25,7 +27,8 @@ export default class RigidBody extends BaseComponent {
         this.friction = 0.1;
         this.latestAngle = 0;
 
-        this.body = Matter.Bodies.circle(0, 0, 50, { isStatic: false, restitution: 1 });
+        this.body = Matter.Bodies.circle(0, 0, 50, { isStatic: false, restitution: 0.5 });
+        this.body.mass = 5
     }
 
     get bodyID() {
@@ -42,32 +45,52 @@ export default class RigidBody extends BaseComponent {
     destroy() {
         super.destroy();
     }
+    setSensor(value:boolean){
+        this.body.isSensor = value;
+    }
+    setStatic(value:boolean){
+        this.body.isStatic = value;
+    }
+    resetPosition(){
+        this.body.velocity.x = 0;
+        this.body.velocity.y = 0;
+        Body.setAngularSpeed(this.body,0)
+        Body.setPosition(this.body,{x:0, y:0})
+        Body.setSpeed(this.body,0)
+        Body.setAngle(this.body,0)
+        Body.setAngularVelocity(this.body,0)
+        this.x = this.gameObject.transform.position.x;
+        this.z = this.gameObject.transform.position.z;
+    }
     buildRect(x: number, y: number, width: number, height: number, isStatic = false) {
         this.body = Matter.Bodies.rectangle(x, y, width, height, { isStatic: isStatic });
         this.body.gameObject = this;
-        this.gameObject.x = this.body.position.x;
-        this.gameObject.z = this.body.position.y;
+        // this.gameObject.x = this.body.position.x;
+        // this.gameObject.z = this.body.position.y;
         this.body.isStatic = isStatic;
         this.loggie.physics.addAgent(this)
+        this.resetPosition();
         return this.body
     }
     buildVertices(x: number, y: number, vertices: Matter.Vector[][], isStatic: boolean = false) {
         this.body = Matter.Bodies.fromVertices(x, y, vertices, { isStatic: isStatic });
         this.body.gameObject = this;
-        this.gameObject.x = this.body.position.x;
-        this.gameObject.z = this.body.position.y;
+        // this.gameObject.x = this.body.position.x;
+        // this.gameObject.z = this.body.position.y;
         this.body.isStatic = isStatic;
         this.loggie.physics.addAgent(this)        
+        this.resetPosition();
         return this.body
     }
     buildCircle(radius: number, isStatic = false) {
         const scale = radius / (this.body.circleRadius || radius);
         Matter.Body.scale(this.body, scale, scale);
         this.body.gameObject = this;
-        this.body.position.x = this.gameObject.x;
-        this.body.position.y = this.gameObject.z;
+        // this.body.position.x = this.gameObject.x;
+        // this.body.position.y = this.gameObject.z;
         this.body.isStatic = isStatic;
         this.loggie.physics.addAgent(this)
+        this.resetPosition();
         return this.body
     }
     scaleToRadius(radius: number){
@@ -82,8 +105,13 @@ export default class RigidBody extends BaseComponent {
         this.appliedForce.y = force.z
     }
     applyVelocity(force: Vector3) {
-        Matter.Body.
-            setVelocity(this.body, force)
+       // Matter.Body.applyForce(this.body, this.body.position, force)
+        Matter.Body.setVelocity(this.body, force)
+        Matter.Body.setAngularVelocity(this.body, 0)
+
+        //Matter.Body.rotate(this.body, 0)
+            //this.body.angle = 0//this.gameObject.transform.angle
+            //Matter.Body.setAngularVelocity(this.body,0)
     }
 
     update(delta: number, unscaledTime: number) {
@@ -91,12 +119,14 @@ export default class RigidBody extends BaseComponent {
 
 
         if(this.targetVelocity.x !== undefined){
-            this.velocityX = this.targetVelocity.x
+
+            this.velocityX = this.targetVelocity.x + this.inverseForce.x
         }
         if(this.targetVelocity.z !== undefined){
-            this.velocityY = this.targetVelocity.z
+            this.velocityY = this.targetVelocity.z + this.inverseForce.z
         }
         
+        this.inverseForce = Vector3.lerp(this.inverseForce, Vector3.ZERO, 0.1)
         
         this.positionDiff.x = this.gameObject.transform.position.x - this.latestPosition.x
         this.positionDiff.z = this.gameObject.transform.position.z - this.latestPosition.z

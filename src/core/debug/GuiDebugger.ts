@@ -1,6 +1,7 @@
 import * as dat from 'dat.gui';
 export default class GuiDebugger {
 
+    static MatterDebug:boolean = true;
     static _instance: GuiDebugger;
     static get instance() {
         if (!GuiDebugger._instance) {
