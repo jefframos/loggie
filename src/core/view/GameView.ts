@@ -10,7 +10,7 @@ import { Signal } from 'signals';
 import { RenderLayers } from '../render/RenderLayers';
 
 export default class GameView extends BaseComponent {
-    private _layer: string = RenderLayers.Gameplay;
+    private _layer: RenderLayers = RenderLayers.Gameplay;
     public viewOffset: PIXI.Point;
     public baseScale: PIXI.Point;
     public pixelPerfect: boolean = false;
@@ -19,7 +19,7 @@ export default class GameView extends BaseComponent {
     public get view() {
         return this._view
     }
-    public set layer(value: string) {
+    public set layer(value: RenderLayers) {
         if(this._layer != value){
             this.onSwapLayer.dispatch(this, value);
         }

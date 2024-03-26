@@ -48,6 +48,7 @@ export default class Wander extends BaseComponent {
                 this.currentWanderTime = this.wanderTime;
             }
         }
+        this.gameObject.transform.lookAtAngle = this.direction;
     }
 
     reset() {

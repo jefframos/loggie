@@ -38,7 +38,7 @@ export default class Loggie {
     public get overlay():Overlay{
         return this.render.overlay;
     }
-  
+ 
     constructor() {
         Loggie._instance = this;
 

@@ -49,7 +49,6 @@ export default class PerspectiveCamera extends Camera {
 
           
 
-            Camera.Zoom = Utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta * 60)
 
             this.renderModule.container.scale.set(Camera.Zoom);
 

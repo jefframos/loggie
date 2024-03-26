@@ -2,15 +2,23 @@ import * as PIXI from 'pixi.js';
 
 import GameObject from './gameObject/GameObject';
 import Vector3 from './gameObject/Vector3';
-
+import AppSingleton from 'loggie/AppSingleton';
+import Utils from './utils/Utils';
+export type WorldViewData = {
+    width: number,
+    height: number,
+    center: PIXI.Point,
+    x: number,
+    y: number,
+}
 export default class Camera extends GameObject {
     static _instance = null;
     static Zoom = 1;
-    static ViewportSize = {
+    public worldView: WorldViewData = {
         width: 1000,
         height: 1000,
-        min: 0,
-        max: 1000
+        center: new PIXI.Point(),
+        x: 0, y: 0
     }
     protected targetZoom: number = 1;
     protected targetPivot: PIXI.Point = new PIXI.Point();
@@ -26,17 +34,21 @@ export default class Camera extends GameObject {
     setZoom(targetZoom: number = 1) {
         this.targetZoom = targetZoom;
     }
+    forceZoom(targetZoom: number = 1) {
+        this.targetZoom = targetZoom;
+        Camera.Zoom = targetZoom;
+    }
     update(delta: number, unscaledTime: number) {
         super.update(delta, unscaledTime);
 
-        // Camera.ViewportSize.width = Game.Borders.width / Camera.Zoom 
-        // Camera.ViewportSize.height = Game.Borders.height / Camera.Zoom 
+        Camera.Zoom = Utils.lerp(Camera.Zoom, this.targetZoom, 0.01 * delta * 60)
 
-        // // Camera.ViewportSize.width = Game.Borders.width / (Camera.Zoom /Game.GlobalScale.x)
-        // // Camera.ViewportSize.height = Game.Borders.height / (Camera.Zoom / Game.GlobalScale.y)
-
-        // Camera.ViewportSize.min = Math.min(Game.Borders.width, Game.Borders.height)
-        // Camera.ViewportSize.max = Math.max(Game.Borders.width, Game.Borders.height)
+        this.worldView.width = AppSingleton.app.screen.width / Camera.Zoom
+        this.worldView.height = AppSingleton.app.screen.height / Camera.Zoom
+        this.worldView.x = this.targetPivot.x  - this.worldView.width / 2
+        this.worldView.y = this.targetPivot.y - this.worldView.height / 2
+        this.worldView.center.x = this.targetPivot.x
+        this.worldView.center.y = this.targetPivot.y
 
     }
 }

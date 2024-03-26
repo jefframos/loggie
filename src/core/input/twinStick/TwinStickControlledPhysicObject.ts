@@ -46,6 +46,9 @@ export default class TwinStickControlledPhysicObject extends BaseComponent {
 
         this.debugTwinStick.rightStickAngle = this.movementService.rightAngle
 
+        this.gameObject.transform.lookAtAngle = this.movementService.rightAngle + Math.PI
+
+
         this.currentSpeed = MathUtils.lerp(this.currentSpeed, this.targetSpeed, 0.08)
         if (this.movementService.leftPointerDown) {
             const dist = Math.pow(this.movementService.leftInputNormal, 0.5)
@@ -57,6 +60,9 @@ export default class TwinStickControlledPhysicObject extends BaseComponent {
             this.gameObject.rigidBody.targetVelocity.z = 0
             this.targetSpeed = 0;
         }
+    }
+    public lateUpdate(delta: number, unscaledDelta: number): void {
+        super.lateUpdate(delta, unscaledDelta)
     }
 
 }

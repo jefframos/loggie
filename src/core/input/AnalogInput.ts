@@ -27,7 +27,7 @@ export default class AnalogInput extends GameObject implements InputDirections {
     public distanceFromOrigin: number = 0;
     private pointerMoveDirectionFromOrigin: PIXI.Point = new PIXI.Point();
     public directionAngle: number = 0;
-    private graphicsContainer?: GameViewContainer;
+    private graphicsContainer!: GameViewContainer;
     private stickContainer: PIXI.Container = new PIXI.Container();
 
     clickOrigin?: PIXI.Graphics;
@@ -54,7 +54,7 @@ export default class AnalogInput extends GameObject implements InputDirections {
 
         this.pad.beginFill(0xFFFFFF).drawRect(0, 0, 200, 200)
         this.graphicsContainer?.addChild(this.pad)
-        this.pad.alpha = 0.1
+        this.pad.alpha = 0.1 * Math.random()//.1
 
         this.pad.interactive = true;
 
@@ -72,9 +72,8 @@ export default class AnalogInput extends GameObject implements InputDirections {
                 return;
             }
 
-            const toLocal = this.graphicsContainer?.view.toLocal(event)
+            const toLocal = this.stickContainer.parent.toLocal(event.screen)
 
-            console.log(event, 'FIX POSITION OF THE ANALOGS AFTER USING GRAPHICS')
 
             if (
                 this.analogType == AnalogInputType.Left && toLocal.x > this.loggie.overlay.right / 2 ||
@@ -96,7 +95,7 @@ export default class AnalogInput extends GameObject implements InputDirections {
 
         this.pad.onpointerup = ((event: any) => {
 
-            const toLocal = this.graphicsContainer?.view.toLocal(event)
+            const toLocal = this.stickContainer.parent.toLocal(event.screen)
 
             if (
                 this.analogType == AnalogInputType.Left && toLocal.x > this.loggie.overlay.right / 2 ||
@@ -116,7 +115,7 @@ export default class AnalogInput extends GameObject implements InputDirections {
 
         this.pad.onglobalpointermove = ((event: any) => {
 
-            const toLocal = this.graphicsContainer?.view.toLocal(event)
+            const toLocal = this.stickContainer.parent.toLocal(event.screen)
             if (toLocal) {
                 this.pointerLatestPosition.x = toLocal.x;
                 this.pointerLatestPosition.y = toLocal.y;
@@ -137,22 +136,7 @@ export default class AnalogInput extends GameObject implements InputDirections {
     get normalDistance(): number {
         return this.stickDistance / this.stickMaxDistance;
     }
-    updatePointers() {
-        return
-        const toLocal = this.graphicsContainer?.view.toLocal(AppSingleton.globalPointer)
-        if (toLocal) {
-            this.pointerLatestPosition.x = toLocal.x;
-            this.pointerLatestPosition.y = toLocal.y;
-        }
-
-        this.pointerMoveDirectionFromOrigin.x = this.pointerLatestPosition.x - this.pointerDownPosition.x
-        this.pointerMoveDirectionFromOrigin.y = this.pointerLatestPosition.y - this.pointerDownPosition.y
-        this.distanceFromOrigin = MathUtils.distance(this.pointerDownPosition.x, this.pointerDownPosition.y, this.pointerLatestPosition.x, this.pointerLatestPosition.y);
-
-        MathUtils.normalizePoint(this.pointerMoveDirectionFromOrigin)
-
-        this.directionAngle = Math.atan2(this.pointerMoveDirectionFromOrigin.y, this.pointerMoveDirectionFromOrigin.x)
-    }
+   
     getNormal(): number {
         return this.normalDistance
     }
@@ -164,7 +148,6 @@ export default class AnalogInput extends GameObject implements InputDirections {
     }
     update(delta: number, time: number): void {
         super.update(delta, time);
-        //this.updatePointers();
 
         if (this.analogType == AnalogInputType.Left) {
             this.pad.width = this.loggie.overlay.right / 2

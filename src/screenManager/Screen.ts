@@ -24,7 +24,7 @@ export default class Screen extends PIXI.Container {
 	}
 
 	//update all childs
-	update(delta:number, unscaledDelta:number) {		
+	update(delta:number) {		
 	}
 
 	destroy() {

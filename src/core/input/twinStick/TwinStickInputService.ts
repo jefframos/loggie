@@ -16,15 +16,15 @@ export default class TwinStickInputService extends GameObject {
     build(gameView: GameView) {
         this.gameView = gameView;
 
-        const analogInput = this.loggie.poolGameObject(AnalogInput) as AnalogInput;
-        analogInput.build(AnalogInputType.Left);
-        this.leftAnalog = analogInput;
         if (!PIXI.isMobile.any) {
             const wasdInput = this.loggie.poolGameObject(WasdInput) as WasdInput;
             wasdInput.build();
             this.wasdProvider = wasdInput;
         } else {
-
+            
+            const analogInput = this.loggie.poolGameObject(AnalogInput) as AnalogInput;
+            analogInput.build(AnalogInputType.Left);
+            this.leftAnalog = analogInput;
             const analogInputRight = this.loggie.poolGameObject(AnalogInput) as AnalogInput;
             analogInputRight.build(AnalogInputType.Right);
             this.rightAnalog = analogInputRight;
@@ -81,7 +81,8 @@ export default class TwinStickInputService extends GameObject {
         return this.rightAnalog;
     }
     getMouseAngleFromGameView(gameView: GameView) {
-        return Math.atan2(gameView.view.y - AppSingleton.globalPointer.y, gameView.view.x - AppSingleton.globalPointer.x)
+        const globalGameView = gameView.view.getGlobalPosition()
+        return Math.atan2(globalGameView.y - AppSingleton.globalPointer.y, globalGameView.x - AppSingleton.globalPointer.x)
     }
     update(delta: number, unscaledTime: number) {
         super.update(delta, unscaledTime);

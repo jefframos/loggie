@@ -22,6 +22,8 @@ export default class RigidBody extends BaseComponent {
 
     constructor() {
         super();
+        this.physics = new PhysicsProperties();
+
         this.autoSetAngle = true;
         this.appliedForce = new Vector3()
         this.friction = 0.1;
@@ -39,8 +41,13 @@ export default class RigidBody extends BaseComponent {
     }
     start() {
     }
-    build() {
-        this.physics = new PhysicsProperties();
+    enable() {
+        this.targetVelocity.x = 0;
+        this.targetVelocity.y = 0;
+        this.targetVelocity.z = 0;
+        this.body.velocity.x = 0;
+        this.body.velocity.y = 0;
+        this.physics.reset()
     }
     destroy() {
         super.destroy();
@@ -52,8 +59,8 @@ export default class RigidBody extends BaseComponent {
         this.body.isStatic = value;
     }
     resetPosition(){
-        this.body.velocity.x = 0;
-        this.body.velocity.y = 0;
+        
+       
         Body.setAngularSpeed(this.body,0)
         Body.setPosition(this.body,{x:0, y:0})
         Body.setSpeed(this.body,0)

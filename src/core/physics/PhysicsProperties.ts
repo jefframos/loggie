@@ -22,6 +22,15 @@ export default class PhysicsProperties {
         this.force2D = new Vector3();
 
     }
+    reset(){
+        this.angle = 0;
+        this.facing = 1;
+        this.facingVector.zero() 
+        this.velocity.zero() 
+        this.unscaleVelocity.zero() 
+        this.force.zero() 
+        this.force2D.zero() 
+    }
     get magnitude() {
         {
             let sum = this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z;
