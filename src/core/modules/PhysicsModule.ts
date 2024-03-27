@@ -88,14 +88,14 @@ export default class PhysicsModule extends GameObject {
             event.pairs.forEach((collision) => {
                 var elementPosA = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyA.id);
                 if (elementPosA >= 0) {
-                    if (this.collisionList[elementPosA].gameObject.onCollisionExit) {
-                        this.collisionList[elementPosA].gameObject.onCollisionExit(collision.bodyB.gameObject)
+                    if (this.collisionList[elementPosA].gameObject.onCollisionEnd) {
+                        this.collisionList[elementPosA].gameObject.onCollisionEnd(collision.bodyB.gameObject)
                     }
                 }
                 var elementPosB = this.collisionList.map(function (x) { return x.bodyID; }).indexOf(collision.bodyB.id);
                 if (elementPosB >= 0) {
-                    if (this.collisionList[elementPosB].gameObject.onCollisionExit) {
-                        this.collisionList[elementPosB].gameObject.onCollisionExit(collision.bodyA.gameObject)
+                    if (this.collisionList[elementPosB].gameObject.onCollisionEnd) {
+                        this.collisionList[elementPosB].gameObject.onCollisionEnd(collision.bodyA.gameObject)
                     }
                 }
             });
@@ -149,7 +149,7 @@ export default class PhysicsModule extends GameObject {
     addAgent(agent: RigidBody) {
 
         //console.log('addBullet')
-        var elementIndex = this.collisionList.map(function (x) { return x.engineID; }).indexOf(agent.engineID);
+        var elementIndex = this.collisionList.map(function (x) { return x.GUID; }).indexOf(agent.GUID);
         if (elementIndex >= 0) {
             //console.log(this.collisionList)
             //this avoid duplicated elements

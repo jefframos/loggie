@@ -4,7 +4,7 @@ import { TagType } from '../TagType';
 import GameObject from './GameObject';
 
 export default class BaseComponent {
-    public engineID: number;
+    public GUID: number;
 
     public enabled: boolean = true;
     public loggie: Loggie;
@@ -20,7 +20,7 @@ export default class BaseComponent {
         this.shouldBeRemoved = false;
         this.loggie = Loggie.instance;
 
-        this.engineID = ++GameObject.ObjectCounter;
+        this.GUID = ++GameObject.ObjectCounter;
 
     }
     public get tag(): TagType { return this._tag };

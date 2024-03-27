@@ -11,8 +11,8 @@ export default class GuiDebugger {
     }
     private _disabled: boolean = false;
     public set disabled(value: boolean) {
-        this._disabled = value;
-        if (!value) {
+        this._disabled = value;        
+        if (value) {
             if (this.gui) {
                 this.gui.destroy();
             }
@@ -21,7 +21,7 @@ export default class GuiDebugger {
     private gui!: dat.GUI;
     constructor() {
 
-        if (this.disabled) {
+        if (this._disabled) {
             return
         }
         this.gui = new dat.GUI();
@@ -29,7 +29,7 @@ export default class GuiDebugger {
 
     public listenFolder(folderName: string, parentObject: any, forceOpen: boolean = true) {
 
-        if (this.disabled) {
+        if (this._disabled) {
             return
         }
         if (!this.gui) {

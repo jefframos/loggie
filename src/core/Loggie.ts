@@ -61,7 +61,7 @@ export default class Loggie {
     static RemoveFromListById(list: Array<any>, gameObject: GameObject) {
         for (let index = 0; index < list.length; index++) {
             const element = list[index];
-            if (element.engineID == gameObject.engineID) {
+            if (element.GUID == gameObject.GUID) {
                 list.splice(index, 1)
                 break
             }
@@ -123,10 +123,12 @@ export default class Loggie {
         gameObject.loggie = this;
 
 
+        // gameObject.gameObjectDestroyed = this.wipeGameObject.bind(this);
+        // gameObject.childAdded = this.addGameObject.bind(this);
+        // gameObject.componentAdded = this.onComponentAdded.bind(this);
         gameObject.gameObjectDestroyed.removeAll()
         gameObject.childAdded.removeAll()
         gameObject.componentAdded.removeAll()
-
         //add these event once to avoid duplications
         gameObject.gameObjectDestroyed.add(this.wipeGameObject.bind(this))
         gameObject.childAdded.add(this.addGameObject.bind(this))

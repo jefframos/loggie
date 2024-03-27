@@ -61,41 +61,44 @@ export default class RigidBody extends BaseComponent {
     resetPosition(){
         
        
-        Body.setAngularSpeed(this.body,0)
-        Body.setPosition(this.body,{x:0, y:0})
-        Body.setSpeed(this.body,0)
-        Body.setAngle(this.body,0)
-        Body.setAngularVelocity(this.body,0)
+        // Body.setAngularSpeed(this.body,0)
+        // Body.setPosition(this.body,{x:0, y:0})
+        // Body.setSpeed(this.body,0)
+        // Body.setAngle(this.body,0)
+        // Body.setAngularVelocity(this.body,0)
         this.x = this.gameObject.transform.position.x;
         this.z = this.gameObject.transform.position.z;
     }
-    buildRect(x: number, y: number, width: number, height: number, isStatic = false) {
+    buildRect(x: number, y: number, width: number, height: number, isStatic = false, isSensor: boolean = false) {
         this.body = Matter.Bodies.rectangle(x, y, width, height, { isStatic: isStatic });
         this.body.gameObject = this;
         // this.gameObject.x = this.body.position.x;
         // this.gameObject.z = this.body.position.y;
         this.body.isStatic = isStatic;
+        this.body.isSensor = isSensor;
         this.loggie.physics.addAgent(this)
         this.resetPosition();
         return this.body
     }
-    buildVertices(x: number, y: number, vertices: Matter.Vector[][], isStatic: boolean = false) {
+    buildVertices(x: number, y: number, vertices: Matter.Vector[][], isStatic: boolean = false, isSensor: boolean = false) {
         this.body = Matter.Bodies.fromVertices(x, y, vertices, { isStatic: isStatic });
         this.body.gameObject = this;
         // this.gameObject.x = this.body.position.x;
         // this.gameObject.z = this.body.position.y;
         this.body.isStatic = isStatic;
+        this.body.isSensor = isSensor;
         this.loggie.physics.addAgent(this)        
         this.resetPosition();
         return this.body
     }
-    buildCircle(radius: number, isStatic = false) {
+    buildCircle(radius: number, isStatic = false, isSensor: boolean = false) {
         const scale = radius / (this.body.circleRadius || radius);
         Matter.Body.scale(this.body, scale, scale);
         this.body.gameObject = this;
         // this.body.position.x = this.gameObject.x;
         // this.body.position.y = this.gameObject.z;
         this.body.isStatic = isStatic;
+        this.body.isSensor = isSensor;
         this.loggie.physics.addAgent(this)
         this.resetPosition();
         return this.body

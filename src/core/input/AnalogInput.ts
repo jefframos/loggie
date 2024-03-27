@@ -54,7 +54,7 @@ export default class AnalogInput extends GameObject implements InputDirections {
 
         this.pad.beginFill(0xFFFFFF).drawRect(0, 0, 200, 200)
         this.graphicsContainer?.addChild(this.pad)
-        this.pad.alpha = 0.1 * Math.random()//.1
+        this.pad.alpha = 0//.1 * Math.random()//.1
 
         this.pad.interactive = true;
 
@@ -116,6 +116,14 @@ export default class AnalogInput extends GameObject implements InputDirections {
         this.pad.onglobalpointermove = ((event: any) => {
 
             const toLocal = this.stickContainer.parent.toLocal(event.screen)
+
+            if (
+                this.analogType == AnalogInputType.Left && toLocal.x > this.loggie.overlay.right / 2 ||
+                this.analogType == AnalogInputType.Right && toLocal.x < this.loggie.overlay.right / 2
+            ) {
+                return
+            }
+
             if (toLocal) {
                 this.pointerLatestPosition.x = toLocal.x;
                 this.pointerLatestPosition.y = toLocal.y;

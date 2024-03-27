@@ -1,6 +1,6 @@
 import { PhysicsLayers } from "./PhysicsLayers";
 
-export enum PhysicsGroups {
+export enum PhysicMasks {
     EnvironmentCollision = PhysicsLayers.Player | PhysicsLayers.Default | PhysicsLayers.Enemy | PhysicsLayers.Bullet,
 
     PlayerCollision = PhysicsLayers.Environment | PhysicsLayers.Default | PhysicsLayers.Enemy | PhysicsLayers.EnemyBullet | ~PhysicsLayers.Player,

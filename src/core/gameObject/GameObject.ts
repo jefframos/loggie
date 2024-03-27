@@ -13,18 +13,25 @@ export type EntityByDistance = {
     distance: number,
     entity: GameObject | null
 }
-
+export type GameObjectCallback = (arg1: GameObject) => void;
+export type ComponentCallback = (arg1: BaseComponent) => void;
 export default class GameObject extends BaseComponent {
     static ObjectCounter = 0;
     protected isDestroyed = false;
 
-    public engineID: number;
+    public GUID: number;
     public transform: Transform;
     public children: Array<GameObject> = []
     public components: Array<BaseComponent> = [];
 
     public parent?: GameObject;
     public rigidBody!: RigidBody;
+
+    // public gameObjectDestroyed!:GameObjectCallback;
+    // public childAdded!:GameObjectCallback;
+    // public childRemoved!:GameObjectCallback;
+    // public rigidbodyAdded!:GameObjectCallback;
+    // public componentAdded!:ComponentCallback;
 
     public gameObjectDestroyed = new signals.Signal();
     public childAdded = new signals.Signal();
@@ -36,7 +43,7 @@ export default class GameObject extends BaseComponent {
 
         this.transform = new Transform(this);
         this.gameObject = this;
-        this.engineID = ++GameObject.ObjectCounter;
+        this.GUID = ++GameObject.ObjectCounter;
 
     }
     start() {
@@ -72,45 +79,59 @@ export default class GameObject extends BaseComponent {
         for (let index = 0; index < this.components.length; index++) {
             const element = this.components[index];
             if (element instanceof type) {
-                elementFound.push(element);                
+                elementFound.push(element);
             }
         }
         return elementFound;
     }
-    poolComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
+    poolComponent(constructor: any, autoBuild: boolean = false, ...buildParams: any | undefined[]) {
         let element = Pool.instance.getElement(constructor)
         this.components.push(element);
         element.gameObject = this;
         element.enable();
-        if(autoBuild){
+        if (autoBuild) {
             element.build(buildParams);
         }
         this.componentAdded.dispatch(element);
+        //this.componentAdded?.(element);
         return element;
     }
-    addNewComponent(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
+    addNewComponent(constructor: any, autoBuild: boolean = false, ...buildParams: any | undefined[]) {
         let element = new constructor();
         this.components.push(element);
         element.gameObject = this;
         element.enable();
-        if(autoBuild){
+        if (autoBuild) {
             element.build(buildParams);
         }
         this.componentAdded.dispatch(element);
+        //this.componentAdded?.(element);
         return element;
     }
-    addGameObject(constructor: any, autoBuild:boolean = false, ...buildParams: any | undefined[]) {
+    poolGameObject(constructor: any, autoBuild: boolean = false, ...buildParams: any | undefined[]) {
         let element = Pool.instance.getElement(constructor)
         this.children.push(element);
         element.setParent(this)
         element.enable();
-        if(autoBuild){
+        if (autoBuild) {
             element.build(buildParams);
         }
-        this.childAdded.dispatch(element);        
+        this.childAdded.dispatch(element);
+        //this.childAdded?.(element);
         return element;
     }
-
+    addNewGameObject(constructor: any, autoBuild: boolean = false, ...buildParams: any | undefined[]) {
+        let element = new constructor();
+        this.children.push(element);
+        element.setParent(this)
+        element.enable();
+        if (autoBuild) {
+            element.build(buildParams);
+        }
+        this.childAdded.dispatch(element);
+        //this.childAdded?.(element);
+        return element;
+    }
     removeComponent(component: any) {
         this.components = this.components.filter(item => item !== component)
         Pool.instance.returnElement(component)
@@ -118,6 +139,7 @@ export default class GameObject extends BaseComponent {
     addChild(gameObject: GameObject) {
         gameObject.setParent(this)
         this.childAdded.dispatch(gameObject)
+        //this.childAdded?.(gameObject)
         this.children.push(gameObject);
     }
     setActive(value = true) {
@@ -136,29 +158,44 @@ export default class GameObject extends BaseComponent {
         let rad = this.transform.angle;
         return rad
     }
-    get x():number{
+    get x(): number {
         return this.transform.position.x
     }
-    get y():number{
+    get y(): number {
         return this.transform.position.y
     }
-    get z():number{
+    get z(): number {
         return this.transform.position.z
     }
-    /**
-     * @param {number} value
-     */
+
     set x(value: number) {
         this.transform.position.x = value
     }
-    /**
-     * @param {number} value
-     */
     set y(value: number) {
         this.transform.position.y = value
     }
     set z(value: number) {
         this.transform.position.z = value
+    }
+
+    get localX(): number {
+        return this.transform.localPosition.x
+    }
+    get localY(): number {
+        return this.transform.localPosition.y
+    }
+    get localZ(): number {
+        return this.transform.localPosition.z
+    }
+
+    set localX(value: number) {
+        this.transform.localPosition.x = value
+    }
+    set localY(value: number) {
+        this.transform.localPosition.y = value
+    }
+    set localZ(value: number) {
+        this.transform.localPosition.z = value
     }
     setPosition(x: number, y: number, z = 0) {
         this.x = x
@@ -177,7 +214,7 @@ export default class GameObject extends BaseComponent {
             }
         }
     }
-     update(delta: number, unscaledDelta:number) {
+    update(delta: number, unscaledDelta: number) {
         super.update(delta, unscaledDelta);
         for (let i = this.components.length - 1; i >= 0; i--) {
             const element = this.components[i];
@@ -200,26 +237,15 @@ export default class GameObject extends BaseComponent {
                 element.lateUpdate(delta, unscaledDelta);
             }
         }
-
-        for (let i = this.children.length - 1; i >= 0; i--) {
-            const element = this.children[i];
-            if (element.shouldBeRemoved) {
-                this.children.splice(i, 1);
-                continue;
-            }
-            if (element.enabled) {
-                element.update(delta, unscaledDelta);
-            }
-        }
-
-        for (let i = this.children.length - 1; i >= 0; i--) {
-            const element = this.children[i];
-            if (element.shouldBeRemoved) {
-                this.children.splice(i, 1);
-                continue;
-            }
-            if (element.enabled) {
-                element.lateUpdate(delta, unscaledDelta);
+    }
+    updateParentingPostion() {
+        if (this.parent) {
+            if (this.rigidBody) {
+                this.rigidBody.x = this.parent.x + this.transform.localPosition.x
+                this.rigidBody.z = this.parent.z + this.transform.localPosition.z
+            } else {
+                this.x = this.parent.x + this.transform.localPosition.x
+                this.z = this.parent.z + this.transform.localPosition.z
             }
         }
     }
@@ -247,12 +273,13 @@ export default class GameObject extends BaseComponent {
     destroy() {
         if (this.isDestroyed) {
             console.log("Trying to destroy object that is already destroyed", this);
-            // console.trace(this);
+            //console.trace(this);
             return;
         }
 
         this.isDestroyed = true;
         this.gameObjectDestroyed.dispatch(this);
+        //this.gameObjectDestroyed?.(this);
 
         if (this.parent) {
             this.parent.removeChild(this)
@@ -263,6 +290,7 @@ export default class GameObject extends BaseComponent {
             for (let index = this.children.length - 1; index >= 0; index--) {
                 const element = this.children[index];
                 this.childRemoved.dispatch(element)
+                //this.childRemoved?.(element)
                 element.destroy();
                 this.children.splice(index, 1);
             }
@@ -280,7 +308,7 @@ export default class GameObject extends BaseComponent {
 
         for (let index = 0; index < this.children.length; index++) {
             const element = this.children[index];
-            if (element.engineID == child.engineID) {
+            if (element.GUID == child.GUID) {
                 this.children.splice(index, 1)
                 break
             }
@@ -306,7 +334,7 @@ export default class GameObject extends BaseComponent {
         return this.enabled && !this.isDestroyed
     }
 
-    static findClosestEntity(go:GameObject, entities: Array<GameObject>): EntityByDistance {
+    static findClosestEntity(go: GameObject, entities: Array<GameObject>): EntityByDistance {
         let closestEntity: EntityByDistance = {
             distance: 0,
             entity: null
@@ -315,7 +343,7 @@ export default class GameObject extends BaseComponent {
 
         entities.forEach(element => {
 
-            if(element != go){
+            if (element != go) {
                 const distance = MathUtils.distance(element.transform.position.x, element.transform.position.z, go.transform.position.x, go.transform.position.z);
                 if (distance < closestDistance) {
                     closestDistance = distance;
